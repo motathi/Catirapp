@@ -4,7 +4,29 @@
 
 Catirapp é um marketplace de veículos focado em oportunidades reais: toda oferta publicada precisa estar abaixo de um percentual da tabela FIPE, e um sistema de matching inteligente conecta automaticamente compradores, vendedores e interessados em troca (catira).
 
-📄 Documentação completa do conceito: [docs/conceito-do-produto.md](docs/conceito-do-produto.md)
+## Documentação
+
+- [Conceito do produto](docs/conceito-do-produto.md) — posicionamento, pilares, planos e estratégia
+- [Modelo de dados](docs/modelo-de-dados.md) — entidades e regras de negócio no banco
+- [Algoritmo de matching](docs/algoritmo-de-matching.md) — especificação da v1 do matching
+
+## Estrutura do projeto
+
+| Caminho | Conteúdo |
+| --- | --- |
+| `app/` | Aplicação web (Next.js + Tailwind) — protótipo do feed de oportunidades |
+| `lib/` | Tipos, formatação e dados de demonstração |
+| `supabase/migrations/` | Schema PostgreSQL com triggers de cota/teto FIPE e políticas RLS |
+| `docs/` | Documentação do produto |
+
+## Desenvolvimento
+
+```bash
+npm install
+npm run dev   # http://localhost:3000
+```
+
+O protótipo atual usa dados mock (`lib/listings.ts`). O próximo passo é conectar ao Supabase usando o schema em `supabase/migrations/0001_initial_schema.sql`.
 
 ## Os três pilares
 
