@@ -19,12 +19,21 @@ function ListingCard({ listing }: { listing: Listing }) {
 
   return (
     <article className="relative h-dvh snap-start overflow-hidden">
-      {/* Placeholder da foto principal */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${listing.photoGradient}`}
-        aria-hidden
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-zinc-950/10" />
+      {/* Foto principal (Storage) ou gradiente placeholder */}
+      {listing.photoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={listing.photoUrl}
+          alt={`${listing.brand} ${listing.model}`}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${listing.photoGradient}`}
+          aria-hidden
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-zinc-950/20" />
 
       <div className="relative flex h-full flex-col justify-end gap-4 px-5 pb-24 pt-20">
         {/* Selo de percentual da FIPE */}

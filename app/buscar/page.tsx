@@ -1,6 +1,6 @@
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, photoPublicUrl } from "@/lib/supabase";
 import {
   categoryLabel,
   formatBRL,
@@ -19,6 +19,7 @@ interface SearchResult {
   price: number;
   fipePct: number;
   acceptsTrade: boolean;
+  photoUrl: string | null;
 }
 
 interface Filters {
@@ -53,6 +54,7 @@ async function search(f: Filters): Promise<SearchResult[]> {
         price: l.price,
         fipePct: fipePercent(l),
         acceptsTrade: l.acceptsTrade,
+        photoUrl: null,
       }));
   }
 
@@ -80,6 +82,7 @@ async function search(f: Filters): Promise<SearchResult[]> {
     price: Number(row.price),
     fipePct: Math.round(Number(row.fipe_percent)),
     acceptsTrade: row.accepts_trade,
+    photoUrl: photoPublicUrl(row.main_photo_path),
   }));
 }
 
@@ -187,10 +190,20 @@ export default async function BuscarPage({
           <Link
             key={r.id}
             href={`/anuncio/${r.id}`}
-            className="flex items-center justify-between rounded-2xl bg-zinc-900 px-4 py-3 transition hover:bg-zinc-800"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-900 p-3 transition hover:bg-zinc-800"
           >
-            <div>
-              <p className="font-semibold">
+            {r.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={r.photoUrl}
+                alt=""
+                className="h-14 w-20 shrink-0 rounded-xl object-cover"
+              />
+            ) : (
+              <div className="h-14 w-20 shrink-0 rounded-xl bg-zinc-800" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">
                 {r.brand} {r.model}
               </p>
               <p className="text-xs text-zinc-500">
@@ -198,7 +211,7 @@ export default async function BuscarPage({
                 {r.acceptsTrade && " · aceita troca"}
               </p>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <p className="font-bold text-emerald-400">{formatBRL(r.price)}</p>
               <p className="text-xs text-zinc-500">{r.fipePct}% da FIPE</p>
             </div>

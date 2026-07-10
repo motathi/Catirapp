@@ -15,6 +15,13 @@ interface FeedRow {
   accepts_trade: boolean;
   accepted_categories: AssetCategory[];
   match_count: number;
+  main_photo_path: string | null;
+}
+
+export function photoPublicUrl(path: string | null): string | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url || !path) return null;
+  return `${url}/storage/v1/object/public/listing-photos/${path}`;
 }
 
 const photoGradients = [
@@ -60,5 +67,6 @@ export async function fetchFeedListings(): Promise<Listing[] | null> {
     acceptedCategories: row.accepted_categories ?? [],
     matchCount: row.match_count,
     photoGradient: photoGradients[i % photoGradients.length],
+    photoUrl: photoPublicUrl(row.main_photo_path),
   }));
 }

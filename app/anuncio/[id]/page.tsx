@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { photoPublicUrl } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import {
   categoryLabel,
@@ -24,6 +25,7 @@ interface ListingDetail {
   acceptsCashComplement: boolean;
   acceptedCategories: AssetCategory[];
   sellerName: string | null;
+  photoUrl: string | null;
 }
 
 async function loadListing(id: string): Promise<ListingDetail | null> {
@@ -36,6 +38,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       ...m,
       acceptsCashComplement: false,
       sellerName: null,
+      photoUrl: null,
     };
   }
 
@@ -45,6 +48,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       `id, brand, model, model_year, mileage_km, city, state, price,
        fipe_value, accepts_trade, accepts_cash_complement,
        listing_accepted_trades(category),
+       listing_photos(storage_path, position),
        profiles!listings_owner_id_fkey(display_name)`,
     )
     .eq("id", id)
@@ -70,6 +74,12 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       (t: { category: string }) => t.category as AssetCategory,
     ),
     sellerName: profile?.display_name ?? null,
+    photoUrl: photoPublicUrl(
+      [...(data.listing_photos ?? [])].sort(
+        (a: { position: number }, b: { position: number }) =>
+          a.position - b.position,
+      )[0]?.storage_path ?? null,
+    ),
   };
 }
 
@@ -87,7 +97,15 @@ export default async function AnuncioPage({
 
   return (
     <main className="mx-auto min-h-dvh max-w-md pb-24">
-      <div className="relative h-72 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950">
+      <div className="relative h-72 overflow-hidden bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950">
+        {listing.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={listing.photoUrl}
+            alt={`${listing.brand} ${listing.model}`}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         <Link
           href="/"
           className="absolute left-4 top-4 rounded-full bg-zinc-950/70 px-4 py-2 text-sm backdrop-blur"

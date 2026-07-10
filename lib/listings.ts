@@ -25,6 +25,7 @@ export interface Listing {
   acceptedCategories: AssetCategory[];
   matchCount: number;
   photoGradient: string;
+  photoUrl?: string | null;
 }
 
 export function fipePercent(l: Listing): number {
