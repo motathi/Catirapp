@@ -12,19 +12,19 @@ export default async function EntrarPage({
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 pb-20">
       <h1 className="text-2xl font-extrabold tracking-tight">
-        Entrar no Catir<span className="text-emerald-400">app</span>
+        Entrar no Catir<span className="text-emerald-600 dark:text-emerald-400">app</span>
       </h1>
-      <p className="mt-1 text-sm text-zinc-400">
+      <p className="mt-1 text-sm text-mute">
         O marketplace que encontra negócios para você.
       </p>
 
       {aviso && (
-        <p className="mt-4 rounded-xl bg-emerald-950/70 px-4 py-3 text-sm text-emerald-300">
+        <p className="mt-4 rounded-xl bg-emerald-100 px-4 py-3 text-sm text-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300">
           {aviso}
         </p>
       )}
       {erro && (
-        <p className="mt-4 rounded-xl bg-red-950/70 px-4 py-3 text-sm text-red-300">
+        <p className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-900 dark:bg-red-950/70 dark:text-red-300">
           {erro}
         </p>
       )}
@@ -35,14 +35,14 @@ export default async function EntrarPage({
           name="email"
           required
           placeholder="E-mail"
-          className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-emerald-500"
+          className="rounded-xl border border-line bg-card px-4 py-3 text-sm outline-none focus:border-emerald-500"
         />
         <input
           type="password"
           name="password"
           required
           placeholder="Senha"
-          className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-emerald-500"
+          className="rounded-xl border border-line bg-card px-4 py-3 text-sm outline-none focus:border-emerald-500"
         />
         <button
           type="submit"
@@ -52,9 +52,9 @@ export default async function EntrarPage({
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-zinc-400">
+      <p className="mt-6 text-center text-sm text-mute">
         Ainda não tem conta?{" "}
-        <Link href="/cadastro" className="font-semibold text-emerald-400">
+        <Link href="/cadastro" className="font-semibold text-emerald-600 dark:text-emerald-400">
           Cadastre-se
         </Link>
       </p>

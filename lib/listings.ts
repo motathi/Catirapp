@@ -26,6 +26,8 @@ export interface Listing {
   matchCount: number;
   photoGradient: string;
   photoUrl?: string | null;
+  vehicleCategory?: AssetCategory | null;
+  isDamaged?: boolean;
 }
 
 export function fipePercent(l: Listing): number {

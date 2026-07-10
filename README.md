@@ -25,8 +25,9 @@ Catirapp é um marketplace de veículos focado em oportunidades reais: toda ofer
 
 | Rota | Descrição |
 | --- | --- |
-| `/` | Feed de oportunidades em tela cheia |
-| `/buscar` | Busca com filtros (marca, modelo, ano, preço, % FIPE, cidade, UF, troca, bem aceito) |
+| `/` | Página inicial: vitrine do estoque com menus rápidos (30% OFF, batidos, caminhonetes, motos, populares, caminhões…), busca e tema claro/escuro |
+| `/feed` | Modo descoberta: feed de oportunidades em tela cheia |
+| `/buscar` | Busca com filtros (marca/modelo, ano, preço, % FIPE, tipo de veículo, batidos, cidade, UF, troca, bem aceito) |
 | `/anuncio/[id]` | Detalhes do anúncio: valores FIPE, economia, catira e vendedor |
 | `/entrar` · `/cadastro` | Autenticação (Supabase Auth); o perfil é criado por trigger no cadastro |
 | `/perfil` | Perfil: plano, cota diária de contatos, matches dos seus anúncios, garagem digital |

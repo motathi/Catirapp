@@ -57,18 +57,18 @@ export default async function PerfilPage() {
           <h1 className="text-2xl font-extrabold tracking-tight">
             {profile?.display_name ?? "Meu perfil"}
           </h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="mt-1 text-sm text-mute">
             {[profile?.city, profile?.state].filter(Boolean).join("/") ||
               user.email}
           </p>
         </div>
-        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400">
+        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
           Plano {plan?.name ?? "Gratuito"}
         </span>
       </header>
 
       {matchCount > 0 && (
-        <p className="mt-5 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold">
+        <p className="mt-5 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white">
           ⚡ {matchCount}{" "}
           {matchCount === 1
             ? "oportunidade compatível"
@@ -78,22 +78,22 @@ export default async function PerfilPage() {
       )}
 
       <section className="mt-6">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
           Contatos de matching hoje
         </h2>
-        <p className="mt-2 rounded-2xl bg-zinc-900 px-4 py-3 text-sm">
+        <p className="mt-2 rounded-2xl bg-card px-4 py-3 text-sm">
           {contactsToday ?? 0} de{" "}
           {dailyLimit == null ? "ilimitados" : dailyLimit} usados
         </p>
       </section>
 
       <section className="mt-6">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
           Meus anúncios
         </h2>
         <div className="mt-2 flex flex-col gap-2">
           {(myListings ?? []).length === 0 && (
-            <p className="rounded-2xl bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
+            <p className="rounded-2xl bg-card px-4 py-3 text-sm text-mute">
               Você ainda não tem anúncios.
             </p>
           )}
@@ -101,15 +101,15 @@ export default async function PerfilPage() {
             <Link
               key={l.id}
               href={`/anuncio/${l.id}`}
-              className="flex items-center justify-between rounded-2xl bg-zinc-900 px-4 py-3 text-sm transition hover:bg-zinc-800"
+              className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm transition hover:bg-card-2"
             >
               <span>
                 {l.brand} {l.model}
-                <span className="ml-2 text-xs text-zinc-500">
+                <span className="ml-2 text-xs text-mute">
                   {l.status === "active" ? "ativo" : l.status}
                 </span>
               </span>
-              <span className="font-semibold text-emerald-400">
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                 {formatBRL(Number(l.price))}
               </span>
             </Link>
@@ -118,12 +118,12 @@ export default async function PerfilPage() {
       </section>
 
       <section className="mt-6" id="garagem">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
           Garagem digital
         </h2>
         <div className="mt-2 flex flex-col gap-2">
           {(assets ?? []).length === 0 && (
-            <p className="rounded-2xl bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
+            <p className="rounded-2xl bg-card px-4 py-3 text-sm text-mute">
               Cadastre bens (veículos, imóveis, máquinas…) para usá-los como
               moeda de troca nas negociações.
             </p>
@@ -131,16 +131,16 @@ export default async function PerfilPage() {
           {(assets ?? []).map((a) => (
             <div
               key={a.id}
-              className="flex items-center justify-between rounded-2xl bg-zinc-900 px-4 py-3 text-sm"
+              className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm"
             >
               <span>
                 {a.title}
-                <span className="ml-2 text-xs text-zinc-500">
+                <span className="ml-2 text-xs text-mute">
                   {categoryLabel[a.category as AssetCategory]}
                 </span>
               </span>
               {a.estimated_value && (
-                <span className="text-zinc-400">
+                <span className="text-mute">
                   {formatBRL(Number(a.estimated_value))}
                 </span>
               )}
@@ -152,7 +152,7 @@ export default async function PerfilPage() {
       <form action={signOut} className="mt-8">
         <button
           type="submit"
-          className="w-full rounded-xl border border-zinc-800 py-3 text-sm text-zinc-400 transition hover:bg-zinc-900"
+          className="w-full rounded-xl border border-line py-3 text-sm text-mute transition hover:bg-card-2"
         >
           Sair da conta
         </button>

@@ -1,7 +1,35 @@
 @import "tailwindcss";
 
+/* Variante dark por classe (toggle do usuário), não por media query */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  color-scheme: light;
+  --surface: #f4f4f5;
+  --card: #ffffff;
+  --card-2: #e4e4e7;
+  --ink: #18181b;
+  --mute: #71717a;
+  --line: #d4d4d8;
+}
+
+.dark {
   color-scheme: dark;
+  --surface: #09090b;
+  --card: #18181b;
+  --card-2: #27272a;
+  --ink: #fafafa;
+  --mute: #a1a1aa;
+  --line: #27272a;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-line: var(--line);
 }
 
 body {
@@ -14,4 +42,11 @@ body {
     "Helvetica Neue",
     Arial,
     sans-serif;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }

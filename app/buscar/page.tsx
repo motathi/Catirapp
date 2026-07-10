@@ -20,9 +20,11 @@ interface SearchResult {
   fipePct: number;
   acceptsTrade: boolean;
   photoUrl: string | null;
+  isDamaged: boolean;
 }
 
 interface Filters {
+  q?: string;
   marca?: string;
   modelo?: string;
   ano_min?: string;
@@ -32,6 +34,8 @@ interface Filters {
   uf?: string;
   troca?: string;
   categoria?: string;
+  tipo?: string;
+  batidos?: string;
 }
 
 async function search(f: Filters): Promise<SearchResult[]> {
@@ -55,10 +59,12 @@ async function search(f: Filters): Promise<SearchResult[]> {
         fipePct: fipePercent(l),
         acceptsTrade: l.acceptsTrade,
         photoUrl: null,
+        isDamaged: false,
       }));
   }
 
   let q = supabase.from("feed_listings").select("*");
+  if (f.q) q = q.or(`brand.ilike.%${f.q}%,model.ilike.%${f.q}%`);
   if (f.marca) q = q.ilike("brand", `%${f.marca}%`);
   if (f.modelo) q = q.ilike("model", `%${f.modelo}%`);
   if (f.ano_min) q = q.gte("model_year", Number(f.ano_min));
@@ -68,6 +74,8 @@ async function search(f: Filters): Promise<SearchResult[]> {
   if (f.uf) q = q.eq("state", f.uf.toUpperCase());
   if (f.troca) q = q.eq("accepts_trade", true);
   if (f.categoria) q = q.contains("accepted_categories", [f.categoria]);
+  if (f.tipo) q = q.eq("vehicle_category", f.tipo);
+  if (f.batidos) q = q.eq("is_damaged", true);
 
   const { data, error } = await q.order("fipe_percent", { ascending: true });
   if (error || !data) return [];
@@ -83,6 +91,7 @@ async function search(f: Filters): Promise<SearchResult[]> {
     fipePct: Math.round(Number(row.fipe_percent)),
     acceptsTrade: row.accepts_trade,
     photoUrl: photoPublicUrl(row.main_photo_path),
+    isDamaged: row.is_damaged,
   }));
 }
 
@@ -92,11 +101,10 @@ export default async function BuscarPage({
   searchParams: Promise<Filters>;
 }) {
   const filters = await searchParams;
-  const hasQuery = Object.values(filters).some(Boolean);
   const results = await search(filters);
 
   const inputClass =
-    "rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-sm outline-none focus:border-emerald-500";
+    "rounded-xl border border-line bg-card px-3 py-2.5 text-sm outline-none focus:border-emerald-500";
 
   return (
     <main className="mx-auto min-h-dvh max-w-md px-5 pb-24 pt-8">
@@ -104,16 +112,10 @@ export default async function BuscarPage({
 
       <form method="get" className="mt-4 grid grid-cols-2 gap-2">
         <input
-          name="marca"
-          defaultValue={filters.marca}
-          placeholder="Marca"
-          className={inputClass}
-        />
-        <input
-          name="modelo"
-          defaultValue={filters.modelo}
-          placeholder="Modelo"
-          className={inputClass}
+          name="q"
+          defaultValue={filters.q}
+          placeholder="Marca ou modelo"
+          className={`${inputClass} col-span-2`}
         />
         <input
           name="ano_min"
@@ -137,6 +139,20 @@ export default async function BuscarPage({
           placeholder="% máx. da FIPE"
           className={inputClass}
         />
+        <select
+          name="tipo"
+          defaultValue={filters.tipo ?? ""}
+          className={inputClass}
+        >
+          <option value="">Tipo de veículo…</option>
+          {(
+            ["carro", "suv", "caminhonete", "moto", "caminhao"] as const
+          ).map((value) => (
+            <option key={value} value={value}>
+              {categoryLabel[value]}
+            </option>
+          ))}
+        </select>
         <input
           name="cidade"
           defaultValue={filters.cidade}
@@ -153,7 +169,7 @@ export default async function BuscarPage({
         <select
           name="categoria"
           defaultValue={filters.categoria ?? ""}
-          className={inputClass}
+          className={`${inputClass} col-span-2`}
         >
           <option value="">Bem aceito na troca…</option>
           {Object.entries(categoryLabel).map(([value, label]) => (
@@ -162,7 +178,7 @@ export default async function BuscarPage({
             </option>
           ))}
         </select>
-        <label className="col-span-2 flex items-center gap-2 px-1 text-sm text-zinc-300">
+        <label className="flex items-center gap-2 px-1 text-sm">
           <input
             type="checkbox"
             name="troca"
@@ -170,7 +186,17 @@ export default async function BuscarPage({
             defaultChecked={Boolean(filters.troca)}
             className="h-4 w-4 accent-emerald-500"
           />
-          Somente anúncios que aceitam troca
+          Aceita troca
+        </label>
+        <label className="flex items-center gap-2 px-1 text-sm">
+          <input
+            type="checkbox"
+            name="batidos"
+            value="1"
+            defaultChecked={Boolean(filters.batidos)}
+            className="h-4 w-4 accent-emerald-500"
+          />
+          Somente batidos
         </label>
         <button
           type="submit"
@@ -181,16 +207,17 @@ export default async function BuscarPage({
       </form>
 
       <section className="mt-6 flex flex-col gap-2">
-        {hasQuery && results.length === 0 && (
-          <p className="rounded-2xl bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
-            Nenhuma oportunidade encontrada com esses filtros.
-          </p>
-        )}
+        <p className="text-sm text-mute">
+          {results.length}{" "}
+          {results.length === 1
+            ? "oportunidade encontrada"
+            : "oportunidades encontradas"}
+        </p>
         {results.map((r) => (
           <Link
             key={r.id}
             href={`/anuncio/${r.id}`}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-900 p-3 transition hover:bg-zinc-800"
+            className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-card p-3 transition hover:border-emerald-500"
           >
             {r.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -200,20 +227,27 @@ export default async function BuscarPage({
                 className="h-14 w-20 shrink-0 rounded-xl object-cover"
               />
             ) : (
-              <div className="h-14 w-20 shrink-0 rounded-xl bg-zinc-800" />
+              <div className="h-14 w-20 shrink-0 rounded-xl bg-card-2" />
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">
                 {r.brand} {r.model}
+                {r.isDamaged && (
+                  <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-amber-950 align-middle">
+                    Batido
+                  </span>
+                )}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-mute">
                 {r.modelYear} · {r.city}/{r.state}
                 {r.acceptsTrade && " · aceita troca"}
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="font-bold text-emerald-400">{formatBRL(r.price)}</p>
-              <p className="text-xs text-zinc-500">{r.fipePct}% da FIPE</p>
+              <p className="font-bold text-emerald-600 dark:text-emerald-400">
+                {formatBRL(r.price)}
+              </p>
+              <p className="text-xs text-mute">{r.fipePct}% da FIPE</p>
             </div>
           </Link>
         ))}

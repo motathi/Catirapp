@@ -108,7 +108,7 @@ export default async function AnuncioPage({
         )}
         <Link
           href="/"
-          className="absolute left-4 top-4 rounded-full bg-zinc-950/70 px-4 py-2 text-sm backdrop-blur"
+          className="absolute left-4 top-4 rounded-full bg-zinc-950/70 px-4 py-2 text-sm text-white backdrop-blur"
         >
           ‹ Voltar
         </Link>
@@ -121,46 +121,46 @@ export default async function AnuncioPage({
         <h1 className="text-2xl font-bold leading-tight">
           {listing.brand} {listing.model}
         </h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <p className="mt-1 text-sm text-mute">
           {listing.modelYear} · {formatKm(listing.mileageKm)} · {listing.city}/
           {listing.state}
         </p>
 
-        <div className="mt-4 rounded-2xl bg-zinc-900 p-4">
-          <p className="text-3xl font-extrabold text-emerald-400">
+        <div className="mt-4 rounded-2xl bg-card p-4">
+          <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
             {formatBRL(listing.price)}
           </p>
           <dl className="mt-3 grid grid-cols-2 gap-y-1 text-sm">
-            <dt className="text-zinc-500">Valor FIPE</dt>
-            <dd className="text-right text-zinc-400">
+            <dt className="text-mute">Valor FIPE</dt>
+            <dd className="text-right text-mute">
               {formatBRL(listing.fipeValue)}
             </dd>
-            <dt className="text-zinc-500">Economia</dt>
-            <dd className="text-right font-semibold text-emerald-400">
+            <dt className="text-mute">Economia</dt>
+            <dd className="text-right font-semibold text-emerald-600 dark:text-emerald-400">
               {formatBRL(savings)}
             </dd>
-            <dt className="text-zinc-500">Percentual da FIPE</dt>
-            <dd className="text-right text-zinc-400">{percent}%</dd>
+            <dt className="text-mute">Percentual da FIPE</dt>
+            <dd className="text-right text-mute">{percent}%</dd>
           </dl>
         </div>
 
         {listing.acceptsTrade && (
-          <div className="mt-4 rounded-2xl bg-zinc-900 p-4">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+          <div className="mt-4 rounded-2xl bg-card p-4">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
               Aceita na troca (catira)
             </h2>
             <div className="mt-2 flex flex-wrap gap-2">
               {listing.acceptedCategories.map((c) => (
                 <span
                   key={c}
-                  className="rounded-full bg-amber-400/15 px-3 py-1 text-sm font-semibold text-amber-300"
+                  className="rounded-full bg-amber-400/20 px-3 py-1 text-sm font-semibold text-amber-700 dark:text-amber-300"
                 >
                   {categoryLabel[c]}
                 </span>
               ))}
             </div>
             {listing.acceptsCashComplement && (
-              <p className="mt-2 text-sm text-zinc-400">
+              <p className="mt-2 text-sm text-mute">
                 Aceita bem + complemento em dinheiro.
               </p>
             )}
@@ -168,9 +168,9 @@ export default async function AnuncioPage({
         )}
 
         {listing.sellerName && (
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-4 text-sm text-mute">
             Anunciado por{" "}
-            <span className="font-semibold text-zinc-200">
+            <span className="font-semibold text-ink">
               {listing.sellerName}
             </span>
           </p>
@@ -180,7 +180,7 @@ export default async function AnuncioPage({
           <button className="rounded-xl bg-emerald-500 py-3 text-emerald-950 transition hover:bg-emerald-400">
             💬 Entrar em contato
           </button>
-          <button className="rounded-xl bg-indigo-600 py-3 transition hover:bg-indigo-500">
+          <button className="rounded-xl bg-indigo-600 py-3 text-white transition hover:bg-indigo-500">
             ⇄ Solicitar match
           </button>
         </div>

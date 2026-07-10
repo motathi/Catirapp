@@ -10,17 +10,17 @@ export default async function CadastroPage({
   const { erro } = await searchParams;
 
   const inputClass =
-    "rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-emerald-500";
+    "rounded-xl border border-line bg-card px-4 py-3 text-sm outline-none focus:border-emerald-500";
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 pb-20">
       <h1 className="text-2xl font-extrabold tracking-tight">Criar conta</h1>
-      <p className="mt-1 text-sm text-zinc-400">
+      <p className="mt-1 text-sm text-mute">
         Comece grátis: 1 anúncio ativo e 1 contato de matching por dia.
       </p>
 
       {erro && (
-        <p className="mt-4 rounded-xl bg-red-950/70 px-4 py-3 text-sm text-red-300">
+        <p className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-900 dark:bg-red-950/70 dark:text-red-300">
           {erro}
         </p>
       )}
@@ -64,9 +64,9 @@ export default async function CadastroPage({
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-zinc-400">
+      <p className="mt-6 text-center text-sm text-mute">
         Já tem conta?{" "}
-        <Link href="/entrar" className="font-semibold text-emerald-400">
+        <Link href="/entrar" className="font-semibold text-emerald-600 dark:text-emerald-400">
           Entrar
         </Link>
       </p>

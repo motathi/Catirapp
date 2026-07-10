@@ -16,6 +16,8 @@ interface FeedRow {
   accepted_categories: AssetCategory[];
   match_count: number;
   main_photo_path: string | null;
+  vehicle_category: AssetCategory | null;
+  is_damaged: boolean;
 }
 
 export function photoPublicUrl(path: string | null): string | null {
@@ -68,5 +70,7 @@ export async function fetchFeedListings(): Promise<Listing[] | null> {
     matchCount: row.match_count,
     photoGradient: photoGradients[i % photoGradients.length],
     photoUrl: photoPublicUrl(row.main_photo_path),
+    vehicleCategory: row.vehicle_category,
+    isDamaged: row.is_damaged,
   }));
 }

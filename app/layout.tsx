@@ -11,14 +11,20 @@ export const viewport: Viewport = {
   themeColor: "#09090b",
 };
 
+// Aplica o tema salvo (ou o do sistema) antes da primeira pintura
+const themeInit = `try{var t=localStorage.getItem('catirapp-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="h-full antialiased">
-      <body className="min-h-full bg-zinc-950 text-zinc-100">{children}</body>
+    <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
+      <body className="min-h-full bg-surface text-ink">
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        {children}
+      </body>
     </html>
   );
 }
