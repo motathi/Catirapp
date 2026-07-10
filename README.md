@@ -23,10 +23,21 @@ Catirapp é um marketplace de veículos focado em oportunidades reais: toda ofer
 
 ```bash
 npm install
-npm run dev   # http://localhost:3000
+cp .env.example .env.local   # preencha com as credenciais do projeto Supabase
+npm run dev                  # http://localhost:3000
 ```
 
-O protótipo atual usa dados mock (`lib/listings.ts`). O próximo passo é conectar ao Supabase usando o schema em `supabase/migrations/0001_initial_schema.sql`.
+O feed lê os anúncios ativos do Supabase pela view `feed_listings` (anúncios públicos + trocas aceitas + contagem de matches). Sem `.env.local`, o app cai automaticamente nos dados de demonstração de `lib/listings.ts` — útil para rodar o protótipo sem backend.
+
+### Backend (Supabase)
+
+As migrations em `supabase/migrations/` criam todo o backend:
+
+1. `0001_initial_schema.sql` — tabelas, triggers de regra de negócio (teto de 85% da FIPE, cotas de anúncios e de contatos por plano) e políticas RLS
+2. `0002_feed_view.sql` — view pública do feed
+3. `0003`–`0005` — hardening de segurança e ajustes
+
+As regras críticas moram no banco: um anúncio acima do teto FIPE ou além da cota do plano é rejeitado pelo próprio PostgreSQL, independentemente do cliente.
 
 ## Os três pilares
 

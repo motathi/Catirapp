@@ -7,6 +7,10 @@ import {
   savings,
   type Listing,
 } from "@/lib/listings";
+import { fetchFeedListings } from "@/lib/supabase";
+
+// O feed lê anúncios novos do Supabase a cada requisição
+export const revalidate = 0;
 
 function ListingCard({ listing }: { listing: Listing }) {
   const percent = fipePercent(listing);
@@ -98,7 +102,10 @@ function ListingCard({ listing }: { listing: Listing }) {
   );
 }
 
-export default function FeedPage() {
+export default async function FeedPage() {
+  // Sem NEXT_PUBLIC_SUPABASE_* configurado, o feed usa os dados de demonstração
+  const listings = (await fetchFeedListings()) ?? mockListings;
+
   return (
     <main className="relative mx-auto max-w-md">
       {/* Cabeçalho fixo */}
@@ -113,7 +120,7 @@ export default function FeedPage() {
 
       {/* Feed de oportunidades em tela cheia */}
       <div className="h-dvh snap-y snap-mandatory overflow-y-auto">
-        {mockListings.map((listing) => (
+        {listings.map((listing) => (
           <ListingCard key={listing.id} listing={listing} />
         ))}
       </div>
