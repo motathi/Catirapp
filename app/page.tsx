@@ -7,7 +7,9 @@ import {
   savings,
   type Listing,
 } from "@/lib/listings";
+import Link from "next/link";
 import { fetchFeedListings } from "@/lib/supabase";
+import BottomNav from "@/components/BottomNav";
 
 // O feed lê anúncios novos do Supabase a cada requisição
 export const revalidate = 0;
@@ -93,9 +95,12 @@ function ListingCard({ listing }: { listing: Listing }) {
           <button className="rounded-xl bg-zinc-800/90 py-3 transition hover:bg-zinc-700">
             ⇄ Match
           </button>
-          <button className="rounded-xl bg-zinc-800/90 py-3 transition hover:bg-zinc-700">
+          <Link
+            href={`/anuncio/${listing.id}`}
+            className="rounded-xl bg-zinc-800/90 py-3 text-center transition hover:bg-zinc-700"
+          >
             Detalhes
-          </button>
+          </Link>
         </div>
       </div>
     </article>
@@ -125,14 +130,7 @@ export default async function FeedPage() {
         ))}
       </div>
 
-      {/* Navegação inferior */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 mx-auto grid max-w-md grid-cols-5 border-t border-zinc-800 bg-zinc-950/95 py-2 text-center text-[11px] text-zinc-400 backdrop-blur">
-        <span className="font-semibold text-emerald-400">Feed</span>
-        <span>Buscar</span>
-        <span>Anunciar</span>
-        <span>Garagem</span>
-        <span>Perfil</span>
-      </nav>
+      <BottomNav />
     </main>
   );
 }

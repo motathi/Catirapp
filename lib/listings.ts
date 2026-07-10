@@ -4,8 +4,12 @@ export type AssetCategory =
   | "caminhao"
   | "caminhonete"
   | "suv"
+  | "embarcacao"
+  | "maquina"
+  | "trator"
+  | "terreno"
   | "imovel"
-  | "terreno";
+  | "outro";
 
 export interface Listing {
   id: string;
@@ -47,8 +51,12 @@ export const categoryLabel: Record<AssetCategory, string> = {
   caminhao: "Caminhão",
   caminhonete: "Caminhonete",
   suv: "SUV",
-  imovel: "Imóvel",
+  embarcacao: "Embarcação",
+  maquina: "Máquina",
+  trator: "Trator",
   terreno: "Terreno",
+  imovel: "Imóvel",
+  outro: "Outro",
 };
 
 // Dados de demonstração — na versão real vêm do Supabase (tabela `listings`)

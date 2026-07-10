@@ -14,10 +14,22 @@ Catirapp é um marketplace de veículos focado em oportunidades reais: toda ofer
 
 | Caminho | Conteúdo |
 | --- | --- |
-| `app/` | Aplicação web (Next.js + Tailwind) — protótipo do feed de oportunidades |
-| `lib/` | Tipos, formatação e dados de demonstração |
-| `supabase/migrations/` | Schema PostgreSQL com triggers de cota/teto FIPE e políticas RLS |
+| `app/` | Aplicação web (Next.js + Tailwind): feed, busca, detalhe do anúncio, login/cadastro e perfil |
+| `lib/` | Tipos, formatação, clients Supabase e dados de demonstração |
+| `supabase/migrations/` | Schema PostgreSQL com triggers de cota/teto FIPE, matching e políticas RLS |
 | `docs/` | Documentação do produto |
+
+### Rotas
+
+| Rota | Descrição |
+| --- | --- |
+| `/` | Feed de oportunidades em tela cheia |
+| `/buscar` | Busca com filtros (marca, modelo, ano, preço, % FIPE, cidade, UF, troca, bem aceito) |
+| `/anuncio/[id]` | Detalhes do anúncio: valores FIPE, economia, catira e vendedor |
+| `/entrar` · `/cadastro` | Autenticação (Supabase Auth); o perfil é criado por trigger no cadastro |
+| `/perfil` | Perfil: plano, cota diária de contatos, matches dos seus anúncios, garagem digital |
+
+Conta de demonstração: `demo1@catirapp.demo` / `catirapp123` (há `demo1`–`demo6`, cada uma dona de um anúncio do seed).
 
 ## Desenvolvimento
 
@@ -36,8 +48,10 @@ As migrations em `supabase/migrations/` criam todo o backend:
 1. `0001_initial_schema.sql` — tabelas, triggers de regra de negócio (teto de 85% da FIPE, cotas de anúncios e de contatos por plano) e políticas RLS
 2. `0002_feed_view.sql` — view pública do feed
 3. `0003`–`0005` — hardening de segurança e ajustes
+4. `0006_auth_profile_trigger.sql` — criação automática do perfil no cadastro
+5. `0007_matching.sql` — algoritmo de matching v1 ([spec](docs/algoritmo-de-matching.md)): recálculo incremental por trigger a cada anúncio publicado/editado, com tipos `troca_direta`/`troca_com_volta`/`compra` e score 0–100
 
-As regras críticas moram no banco: um anúncio acima do teto FIPE ou além da cota do plano é rejeitado pelo próprio PostgreSQL, independentemente do cliente.
+As regras críticas moram no banco: um anúncio acima do teto FIPE ou além da cota do plano é rejeitado pelo próprio PostgreSQL, independentemente do cliente — e os matches são recalculados na mesma transação que muda o anúncio.
 
 ## Os três pilares
 
