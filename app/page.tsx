@@ -107,13 +107,33 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Busca */}
-        <form action="/buscar" method="get" className="mt-3">
+        {/* Busca com acesso aos filtros */}
+        <form action="/buscar" method="get" className="relative mt-3">
           <input
             name="q"
             placeholder="Buscar marca ou modelo…"
-            className="w-full rounded-xl border border-line bg-card px-4 py-2.5 text-sm outline-none focus:border-emerald-500"
+            className="w-full rounded-xl border border-line bg-card py-2.5 pl-4 pr-28 text-sm outline-none focus:border-emerald-500"
           />
+          <Link
+            href="/buscar"
+            className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-emerald-950 transition hover:bg-emerald-400"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="7" y1="12" x2="17" y2="12" />
+              <line x1="10" y1="17" x2="14" y2="17" />
+            </svg>
+            Filtros
+          </Link>
         </form>
       </header>
 
@@ -142,18 +162,10 @@ export default async function HomePage() {
 
       {/* Vitrine do estoque */}
       <section className="px-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
-            Estoque · {listings.length}{" "}
-            {listings.length === 1 ? "veículo" : "veículos"}
-          </h2>
-          <Link
-            href="/buscar"
-            className="text-sm font-semibold text-emerald-600 dark:text-emerald-400"
-          >
-            Filtros ›
-          </Link>
-        </div>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-mute">
+          Estoque · {listings.length}{" "}
+          {listings.length === 1 ? "veículo" : "veículos"}
+        </h2>
         <div className="grid grid-cols-2 gap-3">
           {listings.map((listing) => (
             <StockCard key={listing.id} listing={listing} />
