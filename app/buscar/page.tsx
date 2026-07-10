@@ -21,6 +21,7 @@ interface SearchResult {
   acceptsTrade: boolean;
   photoUrl: string | null;
   isDamaged: boolean;
+  previousPrice: number | null;
 }
 
 interface Filters {
@@ -36,6 +37,7 @@ interface Filters {
   categoria?: string;
   tipo?: string;
   batidos?: string;
+  baixou?: string;
 }
 
 async function search(f: Filters): Promise<SearchResult[]> {
@@ -60,6 +62,7 @@ async function search(f: Filters): Promise<SearchResult[]> {
         acceptsTrade: l.acceptsTrade,
         photoUrl: null,
         isDamaged: false,
+        previousPrice: null,
       }));
   }
 
@@ -76,6 +79,13 @@ async function search(f: Filters): Promise<SearchResult[]> {
   if (f.categoria) q = q.contains("accepted_categories", [f.categoria]);
   if (f.tipo) q = q.eq("vehicle_category", f.tipo);
   if (f.batidos) q = q.eq("is_damaged", true);
+  if (f.baixou) {
+    // Reduções de preço dos últimos 7 dias
+    q = q.gte(
+      "price_dropped_at",
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    );
+  }
 
   const { data, error } = await q.order("fipe_percent", { ascending: true });
   if (error || !data) return [];
@@ -92,6 +102,7 @@ async function search(f: Filters): Promise<SearchResult[]> {
     acceptsTrade: row.accepts_trade,
     photoUrl: photoPublicUrl(row.main_photo_path),
     isDamaged: row.is_damaged,
+    previousPrice: row.previous_price ? Number(row.previous_price) : null,
   }));
 }
 
@@ -244,6 +255,11 @@ export default async function BuscarPage({
               </p>
             </div>
             <div className="shrink-0 text-right">
+              {r.previousPrice && (
+                <p className="text-xs text-mute">
+                  <s>{formatBRL(r.previousPrice)}</s> 📉
+                </p>
+              )}
               <p className="font-bold text-emerald-600 dark:text-emerald-400">
                 {formatBRL(r.price)}
               </p>

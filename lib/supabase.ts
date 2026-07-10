@@ -18,6 +18,8 @@ interface FeedRow {
   main_photo_path: string | null;
   vehicle_category: AssetCategory | null;
   is_damaged: boolean;
+  previous_price: number | null;
+  price_dropped_at: string | null;
 }
 
 export function photoPublicUrl(path: string | null): string | null {
@@ -72,5 +74,6 @@ export async function fetchFeedListings(): Promise<Listing[] | null> {
     photoUrl: photoPublicUrl(row.main_photo_path),
     vehicleCategory: row.vehicle_category,
     isDamaged: row.is_damaged,
+    previousPrice: row.previous_price ? Number(row.previous_price) : null,
   }));
 }

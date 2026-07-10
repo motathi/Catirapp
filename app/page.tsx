@@ -17,7 +17,7 @@ export const revalidate = 0;
 // Menus de acesso rápido, no estilo das vitrines de marketplace
 const quickMenus = [
   { emoji: "🔥", label: "30% OFF", href: "/buscar?pct_max=70" },
-  { emoji: "💰", label: "20% OFF", href: "/buscar?pct_max=80" },
+  { emoji: "📉", label: "Baixou o preço", href: "/buscar?baixou=1" },
   { emoji: "🔧", label: "Batidos", href: "/buscar?batidos=1" },
   { emoji: "🛻", label: "Caminhonetes", href: "/buscar?tipo=caminhonete" },
   { emoji: "🏍️", label: "Motos", href: "/buscar?tipo=moto" },
@@ -55,6 +55,11 @@ function StockCard({ listing }: { listing: Listing }) {
             Batido
           </span>
         )}
+        {listing.previousPrice && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
+            📉 Baixou o preço
+          </span>
+        )}
       </div>
       <div className="p-3">
         <p className="truncate text-sm font-semibold">
@@ -64,6 +69,11 @@ function StockCard({ listing }: { listing: Listing }) {
           {listing.modelYear} · {formatKm(listing.mileageKm)}
         </p>
         <p className="mt-2 text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+          {listing.previousPrice && (
+            <s className="mr-1.5 text-xs font-medium text-mute">
+              {formatBRL(listing.previousPrice)}
+            </s>
+          )}
           {formatBRL(listing.price)}
         </p>
         <p className="text-xs text-mute">
