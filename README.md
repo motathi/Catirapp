@@ -4,6 +4,8 @@
 
 Catirapp é um marketplace de veículos focado em oportunidades reais: toda oferta publicada precisa estar abaixo de um percentual da tabela FIPE, e um sistema de matching inteligente conecta automaticamente compradores, vendedores e interessados em troca (catira).
 
+🌐 **Produção:** https://catirapp-omega.vercel.app
+
 ## Documentação
 
 - [Conceito do produto](docs/conceito-do-produto.md) — posicionamento, pilares, planos e estratégia
