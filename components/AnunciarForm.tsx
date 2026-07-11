@@ -21,14 +21,9 @@ const inputClass =
   "rounded-xl border border-line bg-card px-3 py-2.5 text-sm outline-none focus:border-emerald-500";
 
 async function fipe(path: string): Promise<unknown> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/fipe?${path}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-      },
-    },
-  );
+  // Chama a rota same-origin, que faz o proxy server-side para a FIPE.
+  // Assim não dependemos da anon key embutida no bundle do cliente.
+  const res = await fetch(`/api/fipe?${path}`);
   if (!res.ok) throw new Error(`FIPE ${res.status}`);
   return res.json();
 }

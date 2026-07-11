@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { fetchFipe } from "@/lib/fipe";
 
 function fail(msg: string): never {
   redirect(`/anunciar?erro=${encodeURIComponent(msg)}`);
@@ -26,15 +27,19 @@ export async function createListing(formData: FormData) {
 
   // Reconsulta a FIPE no servidor: o valor que vale é o da tabela,
   // nunca o que veio do formulário.
-  const fipeRes = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/fipe?type=${fipeType}&brand=${brandCode}&model=${modelCode}&year=${yearCode}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-      },
-    },
-  );
-  const fipe = await fipeRes.json();
+  const fipeRes = await fetchFipe({
+    type: fipeType,
+    brand: brandCode,
+    model: modelCode,
+    year: yearCode,
+  });
+  const fipe = fipeRes.data as {
+    price?: string;
+    codeFipe?: string;
+    brand?: string;
+    model?: string;
+    modelYear?: number;
+  } | null;
   const fipeValue = Number(
     String(fipe?.price ?? "")
       .replace(/[^\d,]/g, "")
