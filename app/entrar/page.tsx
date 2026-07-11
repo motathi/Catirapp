@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signIn } from "@/app/auth/actions";
 import BottomNav from "@/components/BottomNav";
+import Logo from "@/components/Logo";
 
 export default async function EntrarPage({
   searchParams,
@@ -11,9 +12,8 @@ export default async function EntrarPage({
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 pb-20">
-      <h1 className="text-2xl font-extrabold tracking-tight">
-        Entrar no Catir<span className="text-emerald-600 dark:text-emerald-400">app</span>
-      </h1>
+      <Logo className="mb-6 h-10 w-auto" />
+      <h1 className="text-2xl font-extrabold tracking-tight">Entrar</h1>
       <p className="mt-1 text-sm text-mute">
         O marketplace que encontra negócios para você.
       </p>

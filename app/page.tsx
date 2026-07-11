@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import ThemeToggle from "@/components/ThemeToggle";
+import Logo from "@/components/Logo";
 import { fetchActiveAds, fetchFeedListings, type Ad } from "@/lib/supabase";
 import {
   fipePercent,
@@ -131,8 +132,9 @@ export default async function HomePage() {
       {/* Cabeçalho */}
       <header className="sticky top-0 z-10 border-b border-line bg-surface/95 px-5 pb-3 pt-4 backdrop-blur">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-extrabold tracking-tight">
-            Catir<span className="text-emerald-500">app</span>
+          <h1 className="flex items-center">
+            <Logo className="h-8 w-auto" />
+            <span className="sr-only">Catir</span>
           </h1>
           <div className="flex items-center gap-2">
             <ThemeToggle />
