@@ -128,23 +128,22 @@ export async function createListing(formData: FormData) {
       .insert(trades.map((category) => ({ listing_id: listing.id, category })));
   }
 
-  const photos = formData
-    .getAll("foto")
-    .filter((f): f is File => f instanceof File && f.size > 0)
+  // As fotos são enviadas direto do navegador para o Storage (evita o limite de
+  // corpo das Server Actions/serverless). Aqui só registramos os caminhos já
+  // gravados na pasta do próprio usuário.
+  const photoPaths = formData
+    .getAll("foto_path")
+    .map(String)
+    .filter((p) => p.startsWith(`${user.id}/`))
     .slice(0, 8);
-  let position = 0;
-  for (const photo of photos) {
-    const ext = (photo.name.split(".").pop() || "jpg").toLowerCase();
-    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("listing-photos")
-      .upload(path, photo, { contentType: photo.type || "image/jpeg" });
-    if (!upErr) {
-      await supabase
-        .from("listing_photos")
-        .insert({ listing_id: listing.id, storage_path: path, position });
-      position += 1;
-    }
+  if (photoPaths.length > 0) {
+    await supabase.from("listing_photos").insert(
+      photoPaths.map((storage_path, position) => ({
+        listing_id: listing.id,
+        storage_path,
+        position,
+      })),
+    );
   }
 
   redirect(`/anuncio/${listing.id}`);

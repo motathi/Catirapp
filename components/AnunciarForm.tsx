@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { createListing } from "@/app/anunciar/actions";
+import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { categoryLabel, formatBRL } from "@/lib/listings";
 import { BRAZIL_STATES } from "@/lib/brazil";
 
@@ -87,6 +88,11 @@ export default function AnunciarForm() {
 
   // Fotos (até MAX_FOTOS).
   const [fotosCount, setFotosCount] = useState(0);
+
+  // Envio do formulário (upload das fotos no cliente + server action).
+  const [submitting, startSubmit] = useTransition();
+  const [uploading, setUploading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Busca inteligente por placa.
   const [plate, setPlate] = useState("");
@@ -233,8 +239,68 @@ export default function AnunciarForm() {
     setPlateError(null);
   }
 
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (submitting || uploading) return;
+    setSubmitError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const files = formData
+      .getAll("foto")
+      .filter((f): f is File => f instanceof File && f.size > 0)
+      .slice(0, MAX_FOTOS);
+    // Os arquivos não vão no corpo da server action (limite de tamanho);
+    // sobem direto para o Storage aqui e enviamos só os caminhos.
+    formData.delete("foto");
+
+    if (files.length > 0) {
+      const supabase = createSupabaseBrowser();
+      if (!supabase) {
+        setSubmitError("Serviço indisponível. Tente novamente.");
+        return;
+      }
+      setUploading(true);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          window.location.href = "/entrar";
+          return;
+        }
+        for (const file of files) {
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+          const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+          const { error } = await supabase.storage
+            .from("listing-photos")
+            .upload(path, file, { contentType: file.type || "image/jpeg" });
+          if (error) {
+            setSubmitError(
+              "Não foi possível enviar as fotos. Verifique sua conexão e tente novamente.",
+            );
+            setUploading(false);
+            return;
+          }
+          formData.append("foto_path", path);
+        }
+      } catch {
+        setSubmitError("Erro ao enviar as fotos. Tente novamente.");
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+
+    // Metadados (corpo pequeno) vão para a server action, que publica e redireciona.
+    startSubmit(() => {
+      createListing(formData);
+    });
+  }
+
+  const busy = submitting || uploading;
+
   return (
-    <form action={createListing} className="mt-5 flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
       {/* Busca inteligente por placa */}
       <section className="rounded-2xl border border-emerald-500/40 bg-emerald-500/5 p-4">
         <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
@@ -646,12 +712,22 @@ export default function AnunciarForm() {
         )}
       </section>
 
+      {submitError && (
+        <p className="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-900 dark:bg-red-950/70 dark:text-red-300">
+          {submitError}
+        </p>
+      )}
+
       <button
         type="submit"
-        disabled={!fipeValue}
+        disabled={!fipeValue || busy}
         className="rounded-xl bg-emerald-500 py-3.5 font-bold text-emerald-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Publicar anúncio
+        {uploading
+          ? "Enviando fotos…"
+          : submitting
+            ? "Publicando…"
+            : "Publicar anúncio"}
       </button>
     </form>
   );
