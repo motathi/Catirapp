@@ -36,17 +36,40 @@ export interface Ad {
   targetUrl: string | null;
 }
 
-// Banners de publicidade exibidos entre os veículos da vitrine
+// Patrocinadores versionados no repositório (public/ads/*). Servem como fallback
+// para que os banners NUNCA sumam da vitrine, mesmo que o banco/bucket seja
+// resetado ou fique indisponível. Ver docs/patrocinadores.md.
+export const fallbackAds: Ad[] = [
+  {
+    id: "loovi",
+    advertiser: "Loovi Seguros",
+    imageUrl: "/ads/loovi.webp",
+    bgColor: "#5578F5",
+    targetUrl: "https://loovi.com.br",
+  },
+  {
+    id: "uai-veiculos",
+    advertiser: "UAI Veículos",
+    imageUrl: "/ads/uai-veiculos.jpeg",
+    bgColor: "#0a0a0a",
+    targetUrl: "https://uaiveiculos.com/",
+  },
+];
+
+// Banners de publicidade exibidos entre os veículos da vitrine.
+// Prioriza os anúncios cadastrados no Supabase; se não houver nenhum (ou o
+// backend estiver indisponível), cai nos patrocinadores versionados no repo.
 export async function fetchActiveAds(): Promise<Ad[]> {
   const supabase = getSupabase();
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabase || !base) return [];
+  if (!supabase || !base) return fallbackAds;
 
   const { data, error } = await supabase
     .from("ads")
     .select("id, advertiser, image_path, bg_color, target_url")
+    .eq("active", true)
     .order("weight");
-  if (error || !data) return [];
+  if (error || !data || data.length === 0) return fallbackAds;
 
   return data.map((row) => ({
     id: row.id,
