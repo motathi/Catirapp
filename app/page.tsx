@@ -3,6 +3,7 @@ import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import Logo from "@/components/Logo";
+import AdImage from "@/components/AdImage";
 import { fetchActiveAds, fetchFeedListings, type Ad } from "@/lib/supabase";
 import {
   fipePercent,
@@ -94,9 +95,9 @@ function AdBanner({ ad }: { ad: Ad }) {
       className="relative col-span-2 h-20 overflow-hidden rounded-2xl border border-line"
       style={{ backgroundColor: ad.bgColor ?? undefined }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <AdImage
         src={ad.imageUrl}
+        fallbackSrc={ad.fallbackImageUrl}
         alt={ad.advertiser}
         className="mx-auto h-full object-contain px-6 py-2"
       />

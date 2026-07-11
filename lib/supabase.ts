@@ -35,8 +35,28 @@ export interface Ad {
   id: string;
   advertiser: string;
   imageUrl: string;
+  // Fonte alternativa usada só se `imageUrl` falhar ao carregar (onError).
+  fallbackImageUrl: string | null;
   bgColor: string | null;
   targetUrl: string | null;
+}
+
+// Monta a URL da imagem do anúncio priorizando a cópia versionada no repositório
+// (`public/ads/<arquivo>`), que nunca some em resets. O bucket de storage vira
+// apenas fallback. Isso evita o modo de falha em que as linhas da tabela `ads`
+// persistem (via seed) mas o storage é zerado — antes o app servia URLs do
+// bucket com 404 e o fallback não disparava, porque "havia linhas".
+function adImageSources(imagePath: string): {
+  imageUrl: string;
+  fallbackImageUrl: string | null;
+} {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return {
+    imageUrl: `/ads/${imagePath}`,
+    fallbackImageUrl: base
+      ? `${base}/storage/v1/object/public/ads/${imagePath}`
+      : null,
+  };
 }
 
 // Patrocinadores versionados no repositório (public/ads/*). Servem como fallback
@@ -47,6 +67,7 @@ export const fallbackAds: Ad[] = [
     id: "loovi",
     advertiser: "Loovi Seguros",
     imageUrl: "/ads/loovi.webp",
+    fallbackImageUrl: null,
     bgColor: "#5578F5",
     targetUrl: "https://loovi.com.br",
   },
@@ -54,6 +75,7 @@ export const fallbackAds: Ad[] = [
     id: "uai-veiculos",
     advertiser: "UAI Veículos",
     imageUrl: "/ads/uai-veiculos.jpeg",
+    fallbackImageUrl: null,
     bgColor: "#0a0a0a",
     targetUrl: "https://uaiveiculos.com/",
   },
@@ -77,7 +99,7 @@ export async function fetchActiveAds(): Promise<Ad[]> {
   return data.map((row) => ({
     id: row.id,
     advertiser: row.advertiser,
-    imageUrl: `${base}/storage/v1/object/public/ads/${row.image_path}`,
+    ...adImageSources(row.image_path),
     bgColor: row.bg_color,
     targetUrl: row.target_url,
   }));

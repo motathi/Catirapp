@@ -20,6 +20,15 @@ patrocinadores existiam apenas como inserção manual no Supabase.
 Ordem de prioridade em `fetchActiveAds()`: anúncios ativos do Supabase →
 se não houver, `fallbackAds` do repositório.
 
+**Renderização à prova de reset:** mesmo quando o anúncio vem do Supabase, a
+imagem é servida pela cópia versionada em `public/ads/<image_path>`, e o bucket
+de storage é usado apenas como fallback (`onError`, no componente `AdImage`).
+Isso corrige o modo de falha em que as linhas da tabela `ads` persistiam (pelo
+seed) mas o bucket era zerado: antes o app montava a URL do bucket, dava 404 e o
+fallback não disparava porque "havia linhas". Agora o banner só quebra se a
+imagem sumir das duas fontes ao mesmo tempo — por isso o arquivo em `public/ads/`
+é obrigatório.
+
 ## Adicionar um novo patrocinador
 
 1. Coloque a imagem em `public/ads/<arquivo>` e faça commit.
