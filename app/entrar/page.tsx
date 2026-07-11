@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signIn } from "@/app/auth/actions";
 import BottomNav from "@/components/BottomNav";
 import Logo from "@/components/Logo";
+import GoogleButton from "@/components/GoogleButton";
 
 export default async function EntrarPage({
   searchParams,
@@ -29,7 +30,17 @@ export default async function EntrarPage({
         </p>
       )}
 
-      <form action={signIn} className="mt-6 flex flex-col gap-3">
+      <div className="mt-6">
+        <GoogleButton label="Entrar com Google" />
+      </div>
+
+      <div className="my-5 flex items-center gap-3 text-xs text-mute">
+        <span className="h-px flex-1 bg-line" />
+        ou
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <form action={signIn} className="flex flex-col gap-3">
         <input
           type="email"
           name="email"

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signUp } from "@/app/auth/actions";
 import BottomNav from "@/components/BottomNav";
 import Logo from "@/components/Logo";
+import GoogleButton from "@/components/GoogleButton";
 
 export default async function CadastroPage({
   searchParams,
@@ -27,7 +28,17 @@ export default async function CadastroPage({
         </p>
       )}
 
-      <form action={signUp} className="mt-6 flex flex-col gap-3">
+      <div className="mt-6">
+        <GoogleButton label="Cadastrar com Google" />
+      </div>
+
+      <div className="my-5 flex items-center gap-3 text-xs text-mute">
+        <span className="h-px flex-1 bg-line" />
+        ou
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <form action={signUp} className="flex flex-col gap-3">
         <input
           name="display_name"
           required
