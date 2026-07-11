@@ -156,4 +156,21 @@ Chave/valor para parâmetros de negócio ajustáveis: `max_fipe_percent` (85), `
 1. **Teto FIPE** — trigger valida `price` contra `fipe_value * max_fipe_percent` na publicação.
 2. **Cota de anúncios** — função verifica `max_active_listings` e `max_monthly_listings` do plano antes de ativar um anúncio.
 3. **Cota de contatos** — função verifica `daily_match_contacts` antes de inserir em `match_contacts`.
-4. **RLS** — leitura pública de anúncios ativos; escrita apenas pelo dono; `matches` visíveis apenas aos donos dos dois anúncios envolvidos.
+4. **Queda de preço** — trigger registra `previous_price`/`price_dropped_at` quando o preço baixa.
+5. **Destaque do plano** — trigger preenche `highlighted_until` na publicação (`plans.highlight_days`).
+6. **RLS** — leitura pública de anúncios ativos; escrita apenas pelo dono; `matches` visíveis apenas aos donos dos dois anúncios envolvidos; upload de fotos restrito à pasta do próprio usuário no Storage.
+
+## RPCs (chamadas pelo app autenticado)
+
+| Função | Descrição |
+| --- | --- |
+| `send_match_contact(match_id, message?)` | Envia o Contato Inteligente com a mensagem padrão; consome a cota diária e marca o match como `contacted` |
+| `update_match_status(match_id, status)` | Marca o match como `viewed` ou `dismissed` (únicas transições do usuário) |
+| `remaining_daily_contacts()` | Contatos de matching restantes hoje (`null` = ilimitado) |
+| `toggle_saved_listing(listing_id)` | Alterna favorito; retorna `true` ao salvar |
+
+## Edge Functions
+
+| Função | Descrição |
+| --- | --- |
+| `fipe` | Consulta a tabela FIPE real (API Parallelum v2): marcas → modelos → anos → valor. A consulta de valor alimenta o cache `fipe_reference` automaticamente ([código](../supabase/functions/fipe/index.ts)) |
