@@ -15,7 +15,7 @@ export default async function CadastroPage({
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 pb-20">
-      <Logo className="mb-6 h-24 w-auto" />
+      <Logo className="mb-6 h-[77px] w-auto" />
       <h1 className="text-2xl font-extrabold tracking-tight">Criar conta</h1>
       <p className="mt-1 text-sm text-mute">
         Comece grátis: 1 anúncio ativo e 1 contato de matching por dia.
