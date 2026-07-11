@@ -360,6 +360,8 @@ export default async function AnuncioPage({
             listingId={listing.id}
             isAuthenticated={isAuthenticated}
             sellerPhone={isAuthenticated ? listing.sellerPhone : null}
+            listingTitle={`${listing.brand} ${listing.model}`}
+            listingPrice={listing.price}
           />
         </div>
       </div>

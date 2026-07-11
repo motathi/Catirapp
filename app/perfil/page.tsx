@@ -77,15 +77,26 @@ export default async function PerfilPage() {
         </p>
       )}
 
-      <Link
-        href="/mensagens"
-        className="mt-5 flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm font-semibold transition hover:bg-card-2"
-      >
-        <span>💬 Mensagens</span>
-        <span aria-hidden className="text-mute">
-          ›
-        </span>
-      </Link>
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <Link
+          href="/mensagens"
+          className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm font-semibold transition hover:bg-card-2"
+        >
+          <span>💬 Mensagens</span>
+          <span aria-hidden className="text-mute">
+            ›
+          </span>
+        </Link>
+        <Link
+          href="/propostas"
+          className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm font-semibold transition hover:bg-card-2"
+        >
+          <span>🤝 Propostas</span>
+          <span aria-hidden className="text-mute">
+            ›
+          </span>
+        </Link>
+      </div>
 
       <section className="mt-6">
         <h2 className="text-sm font-bold uppercase tracking-wide text-mute">

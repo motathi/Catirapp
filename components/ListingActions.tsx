@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toggleSavedListing } from "@/app/feed/actions";
 import { startListingMessage } from "@/app/mensagens/actions";
+import CatiraProposal from "@/components/CatiraProposal";
 
 // -----------------------------------------------------------------------------
 // Favoritos: persistem no navegador (funciona para visitantes anônimos) e, quando
@@ -273,45 +274,41 @@ function ContactOptions({
 }
 
 function MatchSheetBody({
-  matchCount,
+  listingId,
+  listingTitle,
+  listingPrice,
   isAuthenticated,
 }: {
-  matchCount: number;
+  listingId: string;
+  listingTitle?: string;
+  listingPrice?: number;
   isAuthenticated: boolean;
 }) {
-  const intro =
-    (matchCount > 0
-      ? `Este veículo tem ${matchCount} ${
-          matchCount === 1
-            ? "oportunidade compatível"
-            : "oportunidades compatíveis"
-        }. `
-      : "") +
-    "O Catir cruza os bens da sua garagem com este anúncio e sugere as melhores trocas (catira).";
+  // Logado: monta e envia a proposta de catira com itens do estoque + volta
+  if (isAuthenticated) {
+    return (
+      <CatiraProposal
+        listingId={listingId}
+        listingTitle={listingTitle}
+        listingPrice={listingPrice}
+      />
+    );
+  }
 
+  // Anônimo: convida a entrar
   return (
     <>
-      <p>{intro}</p>
+      <p>
+        Ofereça bens da sua garagem (e uma volta em dinheiro, se quiser) em troca
+        deste veículo. Entre para montar sua proposta de catira.
+      </p>
       <div className="mt-4 grid gap-2">
-        {isAuthenticated ? (
-          <>
-            <Link href="/perfil" className={sheetPrimary}>
-              Ver minhas catiras
-            </Link>
-            <Link href="/anunciar" className={sheetSecondary}>
-              Anunciar outro veículo
-            </Link>
-          </>
-        ) : (
-          <>
-            <Link href="/entrar" className={sheetPrimary}>
-              Entrar para ver minhas catiras
-            </Link>
-            <Link href="/anunciar" className={sheetSecondary}>
-              Anunciar meu veículo
-            </Link>
-          </>
-        )}
+        <Link href="/entrar" className={sheetPrimary}>
+          Entrar para propor catira
+        </Link>
+        <Link href="/anunciar" className={sheetSecondary}>
+          Anunciar meu veículo
+        </Link>
       </div>
     </>
   );
@@ -324,10 +321,14 @@ export function FeedActions({
   listingId,
   matchCount,
   isAuthenticated,
+  listingTitle,
+  listingPrice,
 }: {
   listingId: string;
   matchCount: number;
   isAuthenticated: boolean;
+  listingTitle?: string;
+  listingPrice?: number;
 }) {
   const { saved, toggle } = useSaved(listingId);
   const [sheet, setSheet] = useState<SheetKind>(null);
@@ -391,10 +392,12 @@ export function FeedActions({
       <Sheet
         open={sheet === "match"}
         onClose={() => setSheet(null)}
-        title="Catira inteligente"
+        title="Proposta de catira"
       >
         <MatchSheetBody
-          matchCount={matchCount}
+          listingId={listingId}
+          listingTitle={listingTitle}
+          listingPrice={listingPrice}
           isAuthenticated={isAuthenticated}
         />
       </Sheet>
@@ -409,10 +412,14 @@ export function DetailActions({
   listingId,
   isAuthenticated,
   sellerPhone,
+  listingTitle,
+  listingPrice,
 }: {
   listingId: string;
   isAuthenticated: boolean;
   sellerPhone?: string | null;
+  listingTitle?: string;
+  listingPrice?: number;
 }) {
   const { saved, toggle } = useSaved(listingId);
   const [sheet, setSheet] = useState<SheetKind>(null);
@@ -459,9 +466,14 @@ export function DetailActions({
       <Sheet
         open={sheet === "match"}
         onClose={() => setSheet(null)}
-        title="Catira inteligente"
+        title="Proposta de catira"
       >
-        <MatchSheetBody matchCount={0} isAuthenticated={isAuthenticated} />
+        <MatchSheetBody
+          listingId={listingId}
+          listingTitle={listingTitle}
+          listingPrice={listingPrice}
+          isAuthenticated={isAuthenticated}
+        />
       </Sheet>
     </>
   );

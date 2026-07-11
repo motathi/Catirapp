@@ -96,6 +96,8 @@ function ListingCard({
           listingId={listing.id}
           matchCount={listing.matchCount}
           isAuthenticated={isAuthenticated}
+          listingTitle={`${listing.brand} ${listing.model}`}
+          listingPrice={listing.price}
         />
       </div>
     </article>
