@@ -11,6 +11,7 @@ import Link from "next/link";
 import { fetchFeedListings } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import Logo from "@/components/Logo";
+import { FeedActions } from "@/components/ListingActions";
 
 // O feed lê anúncios novos do Supabase a cada requisição
 export const revalidate = 0;
@@ -83,35 +84,8 @@ function ListingCard({ listing }: { listing: Listing }) {
           )}
         </div>
 
-        {/* Matching inteligente */}
-        {listing.matchCount > 0 && (
-          <button className="flex items-center justify-between rounded-2xl bg-indigo-600 px-4 py-3 text-left font-semibold transition hover:bg-indigo-500">
-            <span>
-              ⚡ {listing.matchCount} oportunidades compatíveis com este
-              veículo
-            </span>
-            <span aria-hidden>›</span>
-          </button>
-        )}
-
-        {/* Ações rápidas */}
-        <div className="grid grid-cols-4 gap-2 text-sm font-medium">
-          <button className="rounded-xl bg-zinc-800/90 py-3 transition hover:bg-zinc-700">
-            ♡ Salvar
-          </button>
-          <button className="rounded-xl bg-zinc-800/90 py-3 transition hover:bg-zinc-700">
-            💬 Contato
-          </button>
-          <button className="rounded-xl bg-zinc-800/90 py-3 transition hover:bg-zinc-700">
-            ⇄ Match
-          </button>
-          <Link
-            href={`/anuncio/${listing.id}`}
-            className="rounded-xl bg-zinc-800/90 py-3 text-center transition hover:bg-zinc-700"
-          >
-            Detalhes
-          </Link>
-        </div>
+        {/* Matching inteligente + ações rápidas (interativas) */}
+        <FeedActions listingId={listing.id} matchCount={listing.matchCount} />
       </div>
     </article>
   );

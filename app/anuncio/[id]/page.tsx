@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { photoPublicUrl } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
+import { DetailActions } from "@/components/ListingActions";
 import {
   categoryLabel,
   damageLabel,
@@ -346,13 +347,8 @@ export default async function AnuncioPage({
           </p>
         )}
 
-        <div className="mt-5 grid grid-cols-2 gap-2 text-sm font-semibold">
-          <button className="rounded-xl bg-emerald-500 py-3 text-emerald-950 transition hover:bg-emerald-400">
-            💬 Entrar em contato
-          </button>
-          <button className="rounded-xl bg-indigo-600 py-3 text-white transition hover:bg-indigo-500">
-            ⇄ Solicitar match
-          </button>
+        <div className="mt-5">
+          <DetailActions listingId={listing.id} />
         </div>
       </div>
 
