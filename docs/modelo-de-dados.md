@@ -168,6 +168,14 @@ Chave/valor para parâmetros de negócio ajustáveis: `max_fipe_percent` (85), `
 | `update_match_status(match_id, status)` | Marca o match como `viewed` ou `dismissed` (únicas transições do usuário) |
 | `remaining_daily_contacts()` | Contatos de matching restantes hoje (`null` = ilimitado) |
 | `toggle_saved_listing(listing_id)` | Alterna favorito; retorna `true` ao salvar |
+| `send_message(match_id, body)` | Mensagem no chat do match (liberado após o Contato Inteligente; sem cota) |
+| `my_matches()` | Matches do usuário enriquecidos com o resumo e a foto do outro anúncio |
+
+## Notificações e manutenção
+
+- **`notifications`** — alimentada por triggers: `novo_match` (para os dois donos), `contato_recebido` e `mensagem` (para a outra parte). Leitura própria via RLS; o usuário só consegue atualizar `read_at`.
+- **`messages`** — chat por match; leitura pelas duas partes, escrita apenas via `send_message`.
+- **Expiração** — job diário do `pg_cron` (03:00 UTC) roda `expire_old_listings()`: anúncios ativos além de `listing_expiry_days` (60) viram `expired`, saindo do feed e liberando a cota do plano.
 
 ## Edge Functions
 
