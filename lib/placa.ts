@@ -36,7 +36,7 @@ export interface PlacaResult {
 // Combustível bruto (extra.combustivel ou sigla FIPE) -> valor do formulário.
 function normalizeFuel(raw: string): string {
   const s = raw.toLowerCase();
-  if (s.includes("flex") || (s.includes("gasolina") && s.includes("lcool"))) {
+  if (s === "f" || s.includes("flex") || (s.includes("gasolina") && s.includes("lcool"))) {
     return "flex";
   }
   if (s.includes("lcool") || s.includes("etanol") || s === "a") return "etanol";
@@ -70,13 +70,18 @@ function categoryFromFipeType(type: string): string {
   return "carro";
 }
 
-// Sigla de combustível da FIPE -> índice usado no código de ano da parallelum
-// (1 Gasolina, 2 Álcool, 3 Diesel).
-function fuelIndex(sigla: string): string {
+// A sigla de combustível da placa combina com o nome do ano na parallelum?
+// (ex.: "F" -> "2022 Flex", "G" -> "2022 Gasolina"). O índice numérico do
+// código de ano varia por combustível (Flex=5, Gasolina=1, ...), por isso não
+// tentamos adivinhá-lo: escolhemos pelo nome.
+function siglaMatchesYearName(sigla: string, name: string): boolean {
   const c = (sigla || "").trim().charAt(0).toUpperCase();
-  if (c === "A" || c === "E") return "2";
-  if (c === "D") return "3";
-  return "1";
+  const n = name.toLowerCase();
+  if (c === "F") return n.includes("flex");
+  if (c === "G") return n.includes("gasolina");
+  if (c === "D") return n.includes("diesel");
+  if (c === "A" || c === "E") return n.includes("lcool") || n.includes("álcool");
+  return false;
 }
 
 interface FipeDado {
@@ -89,9 +94,10 @@ interface FipeDado {
   score?: number;
 }
 
-// Confirma um candidato na parallelum (fonte da verdade do valor) e devolve o
-// código de ano correto. Tenta o índice derivado da sigla e, se falhar, os
-// demais, garantindo que o submit do formulário conseguirá revalidar.
+// Confirma um candidato na parallelum (FIPE gratuita) e devolve o código de ano
+// correto. Em vez de adivinhar o índice de combustível, consulta a lista de
+// anos do modelo e escolhe o ano informado (preferindo o combustível da placa),
+// garantindo que o submit do formulário conseguirá revalidar o valor.
 async function resolveCandidate(
   dado: FipeDado,
 ): Promise<PlacaCandidate | null> {
@@ -101,33 +107,37 @@ async function resolveCandidate(
   const ano = String(dado.ano_modelo ?? "");
   if (!brandCode || !modelCode || !ano) return null;
 
-  const tried = new Set<string>();
-  const order = [fuelIndex(dado.sigla_combustivel ?? ""), "1", "2", "3"];
-  for (const idx of order) {
-    if (tried.has(idx)) continue;
-    tried.add(idx);
-    const yearCode = `${ano}-${idx}`;
-    const r = await fetchFipe({ type: fipeType, brand: brandCode, model: modelCode, year: yearCode });
-    const data = r.data as
-      | { price?: string; codeFipe?: string; brand?: string; model?: string; modelYear?: number }
-      | null;
-    if (r.ok && data?.codeFipe) {
-      const value = Number(
-        String(data.price ?? "")
-          .replace(/[^\d,]/g, "")
-          .replace(",", "."),
-      );
-      if (value > 0) {
-        return {
-          fipeType,
-          brandCode,
-          modelCode,
-          yearCode,
-          value,
-          label: `${data.brand} ${data.model} ${data.modelYear}`,
-          codeFipe: data.codeFipe,
-        };
-      }
+  const yearsRes = await fetchFipe({ type: fipeType, brand: brandCode, model: modelCode });
+  if (!yearsRes.ok || !Array.isArray(yearsRes.data)) return null;
+  const years = yearsRes.data as { code: string; name: string }[];
+  const wanted = years.filter((y) => y.code.startsWith(`${ano}-`));
+  if (wanted.length === 0) return null;
+
+  const byFuel = wanted.find((y) =>
+    siglaMatchesYearName(dado.sigla_combustivel ?? "", y.name),
+  );
+  const yearCode = (byFuel ?? wanted[0]).code;
+
+  const r = await fetchFipe({ type: fipeType, brand: brandCode, model: modelCode, year: yearCode });
+  const data = r.data as
+    | { price?: string; codeFipe?: string; brand?: string; model?: string; modelYear?: number }
+    | null;
+  if (r.ok && data?.codeFipe) {
+    const value = Number(
+      String(data.price ?? "")
+        .replace(/[^\d,]/g, "")
+        .replace(",", "."),
+    );
+    if (value > 0) {
+      return {
+        fipeType,
+        brandCode,
+        modelCode,
+        yearCode,
+        value,
+        label: `${data.brand} ${data.model} ${data.modelYear}`,
+        codeFipe: data.codeFipe,
+      };
     }
   }
   return null;
@@ -154,7 +164,12 @@ export async function lookupPlaca(placaRaw: string): Promise<PlacaResult | null>
   const modelYear = /^\d{4}$/.test(modelYearStr) ? Number(modelYearStr) : null;
 
   const combustivel = normalizeFuel(
-    String(extra.combustivel ?? fipe.dados?.[0]?.sigla_combustivel ?? ""),
+    String(
+      extra.combustivel ??
+        (fipe.dados?.[0] as { combustivel?: string })?.combustivel ??
+        fipe.dados?.[0]?.sigla_combustivel ??
+        "",
+    ),
   );
   const cambio = normalizeCambio(String(extra.caixa_cambio ?? ""));
 
@@ -162,7 +177,7 @@ export async function lookupPlaca(placaRaw: string): Promise<PlacaResult | null>
   const dados = (fipe.dados ?? [])
     .slice()
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, 4);
+    .slice(0, 6);
   const resolved = await Promise.all(dados.map(resolveCandidate));
   const candidates = resolved.filter((c): c is PlacaCandidate => c !== null);
 
