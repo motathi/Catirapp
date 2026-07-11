@@ -129,21 +129,23 @@ export async function createListing(formData: FormData) {
   }
 
   // As fotos são enviadas direto do navegador para o Storage (evita o limite de
-  // corpo das Server Actions/serverless). Aqui só registramos os caminhos já
-  // gravados na pasta do próprio usuário.
-  const photoPaths = formData
-    .getAll("foto_path")
-    .map(String)
-    .filter((p) => p.startsWith(`${user.id}/`))
-    .slice(0, 8);
-  if (photoPaths.length > 0) {
-    await supabase.from("listing_photos").insert(
-      photoPaths.map((storage_path, position) => ({
-        listing_id: listing.id,
-        storage_path,
-        position,
-      })),
-    );
+  // corpo das Server Actions/serverless), já comprimidas e com miniatura. Aqui
+  // registramos os caminhos (principal + thumb) da pasta do próprio usuário.
+  const mainPaths = formData.getAll("foto_path").map(String);
+  const thumbPaths = formData.getAll("foto_thumb").map(String);
+  const own = (p: string) => p.startsWith(`${user.id}/`);
+  const photoRows = mainPaths
+    .map((storage_path, i) => ({ storage_path, thumb: thumbPaths[i] ?? "" }))
+    .filter((r) => own(r.storage_path))
+    .slice(0, 8)
+    .map((r, position) => ({
+      listing_id: listing.id,
+      storage_path: r.storage_path,
+      thumb_path: r.thumb && own(r.thumb) ? r.thumb : null,
+      position,
+    }));
+  if (photoRows.length > 0) {
+    await supabase.from("listing_photos").insert(photoRows);
   }
 
   redirect(`/anuncio/${listing.id}`);

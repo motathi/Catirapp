@@ -61,6 +61,64 @@ async function fipe(path: string): Promise<unknown> {
   return res.json();
 }
 
+// --- Otimização de imagens no navegador -------------------------------------
+// Comprime a foto (versão principal) e gera uma miniatura antes do upload,
+// para economizar armazenamento e acelerar o carregamento das páginas.
+let webpSupport: boolean | null = null;
+function supportsWebp(): boolean {
+  if (webpSupport !== null) return webpSupport;
+  const c = document.createElement("canvas");
+  webpSupport = c.toDataURL("image/webp").startsWith("data:image/webp");
+  return webpSupport;
+}
+
+async function resizeToBlob(
+  file: File,
+  maxSide: number,
+  quality: number,
+  type: string,
+): Promise<Blob | null> {
+  const bitmap = await createImageBitmap(file, {
+    imageOrientation: "from-image",
+  });
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close();
+    return null;
+  }
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  return await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, type, quality),
+  );
+}
+
+interface ProcessedImage {
+  main: Blob;
+  thumb: Blob | null;
+  ext: string;
+  contentType: string;
+}
+
+async function processImage(file: File): Promise<ProcessedImage | null> {
+  try {
+    const type = supportsWebp() ? "image/webp" : "image/jpeg";
+    const ext = type === "image/webp" ? "webp" : "jpg";
+    const main = await resizeToBlob(file, 1600, 0.82, type);
+    if (!main) return null;
+    const thumb = await resizeToBlob(file, 400, 0.7, type);
+    return { main, thumb, ext, contentType: type };
+  } catch {
+    return null;
+  }
+}
+
 export default function AnunciarForm() {
   const [category, setCategory] = useState("carro");
   const [brands, setBrands] = useState<FipeOption[]>([]);
@@ -291,19 +349,53 @@ export default function AnunciarForm() {
           return;
         }
         for (const file of files) {
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-          const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-          const { error } = await supabase.storage
-            .from("listing-photos")
-            .upload(path, file, { contentType: file.type || "image/jpeg" });
-          if (error) {
-            setSubmitError(
-              "Não foi possível enviar as fotos. Verifique sua conexão e tente novamente.",
-            );
-            setUploading(false);
-            return;
+          const uuid = crypto.randomUUID();
+          const processed = await processImage(file);
+
+          // Envia sempre um par (foto_path, foto_thumb) na mesma ordem.
+          if (processed) {
+            const mainPath = `${user.id}/${uuid}.${processed.ext}`;
+            const { error } = await supabase.storage
+              .from("listing-photos")
+              .upload(mainPath, processed.main, {
+                contentType: processed.contentType,
+              });
+            if (error) {
+              setSubmitError(
+                "Não foi possível enviar as fotos. Verifique sua conexão e tente novamente.",
+              );
+              setUploading(false);
+              return;
+            }
+            let thumbPath = "";
+            if (processed.thumb) {
+              const tp = `${user.id}/${uuid}.thumb.${processed.ext}`;
+              const { error: tErr } = await supabase.storage
+                .from("listing-photos")
+                .upload(tp, processed.thumb, {
+                  contentType: processed.contentType,
+                });
+              if (!tErr) thumbPath = tp;
+            }
+            formData.append("foto_path", mainPath);
+            formData.append("foto_thumb", thumbPath);
+          } else {
+            // Navegador sem suporte a canvas/bitmap: envia o original
+            const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const path = `${user.id}/${uuid}.${ext}`;
+            const { error } = await supabase.storage
+              .from("listing-photos")
+              .upload(path, file, { contentType: file.type || "image/jpeg" });
+            if (error) {
+              setSubmitError(
+                "Não foi possível enviar as fotos. Verifique sua conexão e tente novamente.",
+              );
+              setUploading(false);
+              return;
+            }
+            formData.append("foto_path", path);
+            formData.append("foto_thumb", "");
           }
-          formData.append("foto_path", path);
         }
       } catch {
         setSubmitError("Erro ao enviar as fotos. Tente novamente.");

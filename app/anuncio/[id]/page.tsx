@@ -33,6 +33,7 @@ interface ListingDetail {
   sellerName: string | null;
   sellerPhone: string | null;
   photoUrls: string[];
+  photoThumbUrls: string[];
   damageSeverity: DamageSeverity;
   auctionHistory: boolean;
   hasLien: boolean;
@@ -62,6 +63,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       sellerName: null,
       sellerPhone: null,
       photoUrls: [],
+      photoThumbUrls: [],
       damageSeverity: "nenhum" as DamageSeverity,
       auctionHistory: false,
       hasLien: false,
@@ -88,7 +90,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
        single_owner, armored, ipva_paid, licensed, color, transmission,
        fuel, doors, plate_end, condition_notes,
        listing_accepted_trades(category),
-       listing_photos(storage_path, position),
+       listing_photos(storage_path, thumb_path, position),
        profiles!listings_owner_id_fkey(display_name, phone)`,
     )
     .eq("id", id)
@@ -137,6 +139,15 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       )
       .map((p: { storage_path: string }) => photoPublicUrl(p.storage_path))
       .filter((u: string | null): u is string => u !== null),
+    photoThumbUrls: [...(data.listing_photos ?? [])]
+      .sort(
+        (a: { position: number }, b: { position: number }) =>
+          a.position - b.position,
+      )
+      .map((p: { storage_path: string; thumb_path: string | null }) =>
+        photoPublicUrl(p.thumb_path ?? p.storage_path),
+      )
+      .filter((u: string | null): u is string => u !== null),
   };
 }
 
@@ -183,9 +194,9 @@ export default async function AnuncioPage({
         </span>
       </div>
 
-      {listing.photoUrls.length > 1 && (
+      {listing.photoThumbUrls.length > 1 && (
         <div className="flex gap-2 overflow-x-auto px-5 pt-3">
-          {listing.photoUrls.map((url, i) => (
+          {listing.photoThumbUrls.map((url, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={url}

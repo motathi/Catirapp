@@ -100,7 +100,7 @@ async function search(f: Filters): Promise<SearchResult[]> {
     price: Number(row.price),
     fipePct: Math.round(Number(row.fipe_percent)),
     acceptsTrade: row.accepts_trade,
-    photoUrl: photoPublicUrl(row.main_photo_path),
+    photoUrl: photoPublicUrl(row.main_photo_thumb_path ?? row.main_photo_path),
     isDamaged: row.is_damaged,
     previousPrice: row.previous_price ? Number(row.previous_price) : null,
   }));
