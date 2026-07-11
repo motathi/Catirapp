@@ -5,10 +5,14 @@ import { photoPublicUrl } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import {
   categoryLabel,
+  damageLabel,
   formatBRL,
   formatKm,
+  fuelLabel,
   mockListings,
+  transmissionLabel,
   type AssetCategory,
+  type DamageSeverity,
 } from "@/lib/listings";
 
 interface ListingDetail {
@@ -26,6 +30,20 @@ interface ListingDetail {
   acceptedCategories: AssetCategory[];
   sellerName: string | null;
   photoUrl: string | null;
+  damageSeverity: DamageSeverity;
+  auctionHistory: boolean;
+  hasLien: boolean;
+  mechanicalIssues: boolean;
+  singleOwner: boolean;
+  armored: boolean;
+  ipvaPaid: boolean;
+  licensed: boolean;
+  color: string | null;
+  transmission: string | null;
+  fuel: string | null;
+  doors: number | null;
+  plateEnd: number | null;
+  conditionNotes: string | null;
 }
 
 async function loadListing(id: string): Promise<ListingDetail | null> {
@@ -39,6 +57,20 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       acceptsCashComplement: false,
       sellerName: null,
       photoUrl: null,
+      damageSeverity: "nenhum" as DamageSeverity,
+      auctionHistory: false,
+      hasLien: false,
+      mechanicalIssues: false,
+      singleOwner: false,
+      armored: false,
+      ipvaPaid: true,
+      licensed: true,
+      color: null,
+      transmission: null,
+      fuel: null,
+      doors: null,
+      plateEnd: null,
+      conditionNotes: null,
     };
   }
 
@@ -47,6 +79,9 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
     .select(
       `id, brand, model, model_year, mileage_km, city, state, price,
        fipe_value, accepts_trade, accepts_cash_complement,
+       damage_severity, auction_history, has_lien, mechanical_issues,
+       single_owner, armored, ipva_paid, licensed, color, transmission,
+       fuel, doors, plate_end, condition_notes,
        listing_accepted_trades(category),
        listing_photos(storage_path, position),
        profiles!listings_owner_id_fkey(display_name)`,
@@ -74,6 +109,20 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       (t: { category: string }) => t.category as AssetCategory,
     ),
     sellerName: profile?.display_name ?? null,
+    damageSeverity: data.damage_severity as DamageSeverity,
+    auctionHistory: data.auction_history,
+    hasLien: data.has_lien,
+    mechanicalIssues: data.mechanical_issues,
+    singleOwner: data.single_owner,
+    armored: data.armored,
+    ipvaPaid: data.ipva_paid,
+    licensed: data.licensed,
+    color: data.color,
+    transmission: data.transmission,
+    fuel: data.fuel,
+    doors: data.doors,
+    plateEnd: data.plate_end,
+    conditionNotes: data.condition_notes,
     photoUrl: photoPublicUrl(
       [...(data.listing_photos ?? [])].sort(
         (a: { position: number }, b: { position: number }) =>
@@ -142,6 +191,112 @@ export default async function AnuncioPage({
             <dt className="text-mute">Percentual da FIPE</dt>
             <dd className="text-right text-mute">{percent}%</dd>
           </dl>
+        </div>
+
+        {/* Ficha do veículo */}
+        <div className="mt-4 rounded-2xl bg-card p-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
+            Ficha do veículo
+          </h2>
+          <dl className="mt-2 grid grid-cols-2 gap-y-1 text-sm">
+            {listing.color && (
+              <>
+                <dt className="text-mute">Cor</dt>
+                <dd className="text-right">{listing.color}</dd>
+              </>
+            )}
+            {listing.transmission && (
+              <>
+                <dt className="text-mute">Câmbio</dt>
+                <dd className="text-right">
+                  {transmissionLabel[listing.transmission]}
+                </dd>
+              </>
+            )}
+            {listing.fuel && (
+              <>
+                <dt className="text-mute">Combustível</dt>
+                <dd className="text-right">{fuelLabel[listing.fuel]}</dd>
+              </>
+            )}
+            {listing.doors && (
+              <>
+                <dt className="text-mute">Portas</dt>
+                <dd className="text-right">{listing.doors}</dd>
+              </>
+            )}
+            {listing.plateEnd != null && (
+              <>
+                <dt className="text-mute">Final da placa</dt>
+                <dd className="text-right">{listing.plateEnd}</dd>
+              </>
+            )}
+            <dt className="text-mute">Quilometragem</dt>
+            <dd className="text-right">{formatKm(listing.mileageKm)}</dd>
+          </dl>
+
+          {/* Situação e histórico */}
+          <div className="mt-3 flex flex-wrap gap-1.5 text-xs font-semibold">
+            <span
+              className={
+                listing.damageSeverity === "nenhum"
+                  ? "rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-600 dark:text-emerald-400"
+                  : "rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-700 dark:text-amber-300"
+              }
+            >
+              {listing.damageSeverity === "nenhum" ? "✓ " : "⚠ "}
+              {damageLabel[listing.damageSeverity]}
+            </span>
+            <span
+              className={
+                listing.auctionHistory
+                  ? "rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-700 dark:text-amber-300"
+                  : "rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-600 dark:text-emerald-400"
+              }
+            >
+              {listing.auctionHistory
+                ? "⚠ Passagem por leilão"
+                : "✓ Sem passagem por leilão"}
+            </span>
+            <span
+              className={
+                listing.hasLien
+                  ? "rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-700 dark:text-amber-300"
+                  : "rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-600 dark:text-emerald-400"
+              }
+            >
+              {listing.hasLien ? "⚠ Com gravame" : "✓ Sem gravame"}
+            </span>
+            {listing.mechanicalIssues && (
+              <span className="rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-700 dark:text-amber-300">
+                ⚠ Problema na mecânica
+              </span>
+            )}
+            {listing.singleOwner && (
+              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-600 dark:text-emerald-400">
+                ✓ Único dono
+              </span>
+            )}
+            {listing.ipvaPaid && (
+              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-600 dark:text-emerald-400">
+                ✓ IPVA pago
+              </span>
+            )}
+            {listing.licensed && (
+              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-600 dark:text-emerald-400">
+                ✓ Licenciado
+              </span>
+            )}
+            {listing.armored && (
+              <span className="rounded-full bg-card-2 px-2.5 py-1 text-mute">
+                Blindado
+              </span>
+            )}
+          </div>
+
+          {listing.conditionNotes && (
+            <p className="mt-3 text-sm text-mute">{listing.conditionNotes}</p>
+          )}
         </div>
 
         {listing.acceptsTrade && (

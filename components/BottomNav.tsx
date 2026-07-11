@@ -36,12 +36,12 @@ function Icon({ name }: { name: string }) {
           <path d="M13 2 4.5 14H11l-1.5 8L18 10h-6.5L13 2z" />
         </svg>
       );
-    case "garagem":
+    case "anunciar":
       return (
         <svg {...common}>
-          <path d="M3 21V9l9-5 9 5v12" />
-          <path d="M7 21v-8h10v8" />
-          <path d="M7 17h10" />
+          <circle cx="12" cy="12" r="9" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+          <line x1="8" y1="12" x2="16" y2="12" />
         </svg>
       );
     case "perfil":
@@ -60,7 +60,7 @@ const items = [
   { href: "/", icon: "inicio", label: "Início" },
   { href: "/buscar", icon: "buscar", label: "Buscar" },
   { href: "/feed", icon: "descobrir", label: "Descobrir", featured: true },
-  { href: "/perfil#garagem", icon: "garagem", label: "Garagem" },
+  { href: "/anunciar", icon: "anunciar", label: "Anunciar" },
   { href: "/perfil", icon: "perfil", label: "Perfil" },
 ];
 
@@ -76,7 +76,7 @@ export default function BottomNav() {
         const base = item.href.split("#")[0];
         const active =
           base === "/" ? pathname === "/" : pathname.startsWith(base);
-        const highlight = active && item.label !== "Garagem";
+        const highlight = active;
 
         if (item.featured) {
           return (

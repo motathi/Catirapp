@@ -49,6 +49,35 @@ export const formatBRL = (value: number) =>
 export const formatKm = (value: number) =>
   `${new Intl.NumberFormat("pt-BR").format(value)} km`;
 
+export type DamageSeverity =
+  | "nenhum"
+  | "pequena_monta"
+  | "media_monta"
+  | "grande_monta";
+
+export const damageLabel: Record<DamageSeverity, string> = {
+  nenhum: "Sem sinistro",
+  pequena_monta: "Sinistro de pequena monta",
+  media_monta: "Sinistro de média monta",
+  grande_monta: "Sinistro de grande monta",
+};
+
+export const transmissionLabel: Record<string, string> = {
+  manual: "Manual",
+  automatico: "Automático",
+  cvt: "CVT",
+  automatizado: "Automatizado",
+};
+
+export const fuelLabel: Record<string, string> = {
+  flex: "Flex",
+  gasolina: "Gasolina",
+  etanol: "Etanol",
+  diesel: "Diesel",
+  hibrido: "Híbrido",
+  eletrico: "Elétrico",
+};
+
 export const categoryLabel: Record<AssetCategory, string> = {
   carro: "Carro",
   moto: "Moto",
