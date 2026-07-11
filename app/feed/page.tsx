@@ -126,9 +126,9 @@ export default async function FeedPage() {
     <main className="relative mx-auto max-w-md bg-zinc-950 text-zinc-100">
       {/* Cabeçalho fixo */}
       <div className="fixed inset-x-0 top-0 z-10 mx-auto flex max-w-md items-center justify-between bg-gradient-to-b from-zinc-950/90 to-transparent px-5 pb-8 pt-4">
-        <Link href="/" className="flex items-center gap-1 text-xl font-extrabold">
+        <Link href="/" className="flex items-center gap-1 text-2xl font-extrabold">
           <span className="text-zinc-300">‹</span>
-          <Logo variant="dark" className="h-7 w-auto" />
+          <Logo variant="dark" className="h-11 w-auto" />
           <span className="sr-only">Catir</span>
         </Link>
         <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">

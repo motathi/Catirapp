@@ -133,7 +133,7 @@ export default async function HomePage() {
       <header className="sticky top-0 z-10 border-b border-line bg-surface/95 px-5 pb-3 pt-4 backdrop-blur">
         <div className="flex items-center justify-between">
           <h1 className="flex items-center">
-            <Logo className="h-8 w-auto" />
+            <Logo className="h-12 w-auto" />
             <span className="sr-only">Catir</span>
           </h1>
           <div className="flex items-center gap-2">
