@@ -9,6 +9,7 @@ import {
 } from "@/lib/listings";
 import Link from "next/link";
 import { fetchFeedListings } from "@/lib/supabase";
+import { createSupabaseServer } from "@/lib/supabase-server";
 import BottomNav from "@/components/BottomNav";
 import Logo from "@/components/Logo";
 import { FeedActions } from "@/components/ListingActions";
@@ -16,7 +17,13 @@ import { FeedActions } from "@/components/ListingActions";
 // O feed lê anúncios novos do Supabase a cada requisição
 export const revalidate = 0;
 
-function ListingCard({ listing }: { listing: Listing }) {
+function ListingCard({
+  listing,
+  isAuthenticated,
+}: {
+  listing: Listing;
+  isAuthenticated: boolean;
+}) {
   const percent = fipePercent(listing);
 
   return (
@@ -85,7 +92,11 @@ function ListingCard({ listing }: { listing: Listing }) {
         </div>
 
         {/* Matching inteligente + ações rápidas (interativas) */}
-        <FeedActions listingId={listing.id} matchCount={listing.matchCount} />
+        <FeedActions
+          listingId={listing.id}
+          matchCount={listing.matchCount}
+          isAuthenticated={isAuthenticated}
+        />
       </div>
     </article>
   );
@@ -94,6 +105,11 @@ function ListingCard({ listing }: { listing: Listing }) {
 export default async function FeedPage() {
   // Sem NEXT_PUBLIC_SUPABASE_* configurado, o feed usa os dados de demonstração
   const listings = (await fetchFeedListings()) ?? mockListings;
+
+  const supabase = await createSupabaseServer();
+  const isAuthenticated = supabase
+    ? Boolean((await supabase.auth.getUser()).data.user)
+    : false;
 
   return (
     // O modo descoberta é sempre escuro: o conteúdo vive sobre as fotos
@@ -113,7 +129,11 @@ export default async function FeedPage() {
       {/* Feed de oportunidades em tela cheia */}
       <div className="h-dvh snap-y snap-mandatory overflow-y-auto">
         {listings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
+          <ListingCard
+            key={listing.id}
+            listing={listing}
+            isAuthenticated={isAuthenticated}
+          />
         ))}
       </div>
 

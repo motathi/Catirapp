@@ -142,47 +142,127 @@ const sheetSecondary =
 
 type SheetKind = "contato" | "match" | null;
 
-function ContactSheetBody({ listingId }: { listingId: string }) {
+// Monta o link do WhatsApp a partir de um telefone brasileiro (ignora máscara)
+function waLink(phone: string, text: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${withCountry}?text=${encodeURIComponent(text)}`;
+}
+
+function ContactSheetBody({
+  listingId,
+  isAuthenticated,
+  sellerPhone,
+}: {
+  listingId: string;
+  isAuthenticated: boolean;
+  sellerPhone?: string | null;
+}) {
+  // Visitante anônimo: convida a entrar
+  if (!isAuthenticated) {
+    return (
+      <>
+        <p>
+          No Catir a conversa começa pelo{" "}
+          <strong className="text-zinc-100">Contato Inteligente</strong>: entre
+          na sua conta para falar com quem anunciou e negociar com segurança.
+        </p>
+        <div className="mt-4 grid gap-2">
+          <Link href="/entrar" className={sheetPrimary}>
+            Entrar para conversar
+          </Link>
+          <Link href={`/anuncio/${listingId}`} className={sheetSecondary}>
+            Ver detalhes do anúncio
+          </Link>
+        </div>
+      </>
+    );
+  }
+
+  // Logado, com telefone do vendedor: fala direto no WhatsApp
+  if (sellerPhone) {
+    return (
+      <>
+        <p>
+          Fale com quem anunciou pelo WhatsApp. Combine a visita, a negociação e
+          uma possível catira com segurança.
+        </p>
+        <div className="mt-4 grid gap-2">
+          <a
+            href={waLink(
+              sellerPhone,
+              "Olá! Vi seu anúncio no Catir e tenho interesse.",
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={sheetPrimary}
+          >
+            Falar no WhatsApp
+          </a>
+          <Link href={`/anuncio/${listingId}`} className={sheetSecondary}>
+            Ver detalhes do anúncio
+          </Link>
+        </div>
+      </>
+    );
+  }
+
+  // Logado, sem telefone à mão (ex.: cartão do feed): leva ao detalhe
   return (
     <>
       <p>
-        No Catir a conversa começa pelo{" "}
-        <strong className="text-zinc-100">Contato Inteligente</strong>: entre na
-        sua conta para falar com quem anunciou e negociar com segurança.
+        Abra o anúncio para ver os dados de contato de quem anunciou e negociar
+        com segurança.
       </p>
       <div className="mt-4 grid gap-2">
-        <Link href="/entrar" className={sheetPrimary}>
-          Entrar para conversar
-        </Link>
-        <Link href={`/anuncio/${listingId}`} className={sheetSecondary}>
-          Ver detalhes do anúncio
+        <Link href={`/anuncio/${listingId}`} className={sheetPrimary}>
+          Ver anúncio e falar com o vendedor
         </Link>
       </div>
     </>
   );
 }
 
-function MatchSheetBody({ matchCount }: { matchCount: number }) {
+function MatchSheetBody({
+  matchCount,
+  isAuthenticated,
+}: {
+  matchCount: number;
+  isAuthenticated: boolean;
+}) {
+  const intro =
+    (matchCount > 0
+      ? `Este veículo tem ${matchCount} ${
+          matchCount === 1
+            ? "oportunidade compatível"
+            : "oportunidades compatíveis"
+        }. `
+      : "") +
+    "O Catir cruza os bens da sua garagem com este anúncio e sugere as melhores trocas (catira).";
+
   return (
     <>
-      <p>
-        {matchCount > 0
-          ? `Este veículo tem ${matchCount} ${
-              matchCount === 1
-                ? "oportunidade compatível"
-                : "oportunidades compatíveis"
-            }. `
-          : ""}
-        O Catir cruza os bens da sua garagem com este anúncio e sugere as
-        melhores trocas (catira). Cadastre o seu veículo para receber catiras.
-      </p>
+      <p>{intro}</p>
       <div className="mt-4 grid gap-2">
-        <Link href="/entrar" className={sheetPrimary}>
-          Entrar para ver minhas catiras
-        </Link>
-        <Link href="/anunciar" className={sheetSecondary}>
-          Anunciar meu veículo
-        </Link>
+        {isAuthenticated ? (
+          <>
+            <Link href="/perfil" className={sheetPrimary}>
+              Ver minhas catiras
+            </Link>
+            <Link href="/anunciar" className={sheetSecondary}>
+              Anunciar outro veículo
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link href="/entrar" className={sheetPrimary}>
+              Entrar para ver minhas catiras
+            </Link>
+            <Link href="/anunciar" className={sheetSecondary}>
+              Anunciar meu veículo
+            </Link>
+          </>
+        )}
       </div>
     </>
   );
@@ -194,9 +274,11 @@ function MatchSheetBody({ matchCount }: { matchCount: number }) {
 export function FeedActions({
   listingId,
   matchCount,
+  isAuthenticated,
 }: {
   listingId: string;
   matchCount: number;
+  isAuthenticated: boolean;
 }) {
   const { saved, toggle } = useSaved(listingId);
   const [sheet, setSheet] = useState<SheetKind>(null);
@@ -252,14 +334,20 @@ export function FeedActions({
         onClose={() => setSheet(null)}
         title="Contato Inteligente"
       >
-        <ContactSheetBody listingId={listingId} />
+        <ContactSheetBody
+          listingId={listingId}
+          isAuthenticated={isAuthenticated}
+        />
       </Sheet>
       <Sheet
         open={sheet === "match"}
         onClose={() => setSheet(null)}
         title="Catira inteligente"
       >
-        <MatchSheetBody matchCount={matchCount} />
+        <MatchSheetBody
+          matchCount={matchCount}
+          isAuthenticated={isAuthenticated}
+        />
       </Sheet>
     </>
   );
@@ -268,7 +356,15 @@ export function FeedActions({
 // -----------------------------------------------------------------------------
 // Botões de ação da página de detalhe do anúncio
 // -----------------------------------------------------------------------------
-export function DetailActions({ listingId }: { listingId: string }) {
+export function DetailActions({
+  listingId,
+  isAuthenticated,
+  sellerPhone,
+}: {
+  listingId: string;
+  isAuthenticated: boolean;
+  sellerPhone?: string | null;
+}) {
   const { saved, toggle } = useSaved(listingId);
   const [sheet, setSheet] = useState<SheetKind>(null);
 
@@ -305,14 +401,18 @@ export function DetailActions({ listingId }: { listingId: string }) {
         onClose={() => setSheet(null)}
         title="Contato Inteligente"
       >
-        <ContactSheetBody listingId={listingId} />
+        <ContactSheetBody
+          listingId={listingId}
+          isAuthenticated={isAuthenticated}
+          sellerPhone={sellerPhone}
+        />
       </Sheet>
       <Sheet
         open={sheet === "match"}
         onClose={() => setSheet(null)}
         title="Catira inteligente"
       >
-        <MatchSheetBody matchCount={0} />
+        <MatchSheetBody matchCount={0} isAuthenticated={isAuthenticated} />
       </Sheet>
     </>
   );

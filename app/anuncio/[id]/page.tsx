@@ -30,6 +30,7 @@ interface ListingDetail {
   acceptsCashComplement: boolean;
   acceptedCategories: AssetCategory[];
   sellerName: string | null;
+  sellerPhone: string | null;
   photoUrls: string[];
   damageSeverity: DamageSeverity;
   auctionHistory: boolean;
@@ -57,6 +58,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       ...m,
       acceptsCashComplement: false,
       sellerName: null,
+      sellerPhone: null,
       photoUrls: [],
       damageSeverity: "nenhum" as DamageSeverity,
       auctionHistory: false,
@@ -85,7 +87,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
        fuel, doors, plate_end, condition_notes,
        listing_accepted_trades(category),
        listing_photos(storage_path, position),
-       profiles!listings_owner_id_fkey(display_name)`,
+       profiles!listings_owner_id_fkey(display_name, phone)`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -110,6 +112,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       (t: { category: string }) => t.category as AssetCategory,
     ),
     sellerName: profile?.display_name ?? null,
+    sellerPhone: profile?.phone ?? null,
     damageSeverity: data.damage_severity as DamageSeverity,
     auctionHistory: data.auction_history,
     hasLien: data.has_lien,
@@ -142,6 +145,11 @@ export default async function AnuncioPage({
   const { id } = await params;
   const listing = await loadListing(id);
   if (!listing) notFound();
+
+  const supabase = await createSupabaseServer();
+  const isAuthenticated = supabase
+    ? Boolean((await supabase.auth.getUser()).data.user)
+    : false;
 
   const percent = Math.round((listing.price / listing.fipeValue) * 100);
   const savings = listing.fipeValue - listing.price;
@@ -348,7 +356,11 @@ export default async function AnuncioPage({
         )}
 
         <div className="mt-5">
-          <DetailActions listingId={listing.id} />
+          <DetailActions
+            listingId={listing.id}
+            isAuthenticated={isAuthenticated}
+            sellerPhone={isAuthenticated ? listing.sellerPhone : null}
+          />
         </div>
       </div>
 
