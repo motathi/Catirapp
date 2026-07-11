@@ -9,6 +9,29 @@ interface FipeOption {
   name: string;
 }
 
+// Espelha o retorno de /api/placa (lib/placa.ts). Definido localmente para não
+// arrastar código de servidor para o bundle do cliente.
+interface PlacaCandidate {
+  fipeType: string;
+  brandCode: string;
+  modelCode: string;
+  yearCode: string;
+  value: number;
+  label: string;
+  codeFipe: string;
+}
+interface PlacaResult {
+  placa: string;
+  marca: string;
+  modelo: string;
+  modelYear: number | null;
+  cor: string;
+  combustivel: string;
+  cambio: string;
+  category: string;
+  candidates: PlacaCandidate[];
+}
+
 const fipeTypeByCategory: Record<string, string> = {
   carro: "cars",
   suv: "cars",
@@ -36,11 +59,38 @@ export default function AnunciarForm() {
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
-  const [fipeValue, setFipeValue] = useState<number | null>(null);
+  const [manualFipeValue, setManualFipeValue] = useState<number | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
-  const fipeType = fipeTypeByCategory[category] ?? "cars";
+  // Ficha controlada (para a busca por placa poder autopreencher).
+  const [cor, setCor] = useState("");
+  const [combustivel, setCombustivel] = useState("");
+  const [cambio, setCambio] = useState("");
+
+  // Busca inteligente por placa.
+  const [plate, setPlate] = useState("");
+  const [plateLoading, setPlateLoading] = useState(false);
+  const [plateError, setPlateError] = useState<string | null>(null);
+  const [identified, setIdentified] = useState<PlacaResult | null>(null);
+  const [candidateIdx, setCandidateIdx] = useState(0);
+
+  const manualFipeType = fipeTypeByCategory[category] ?? "cars";
+
+  // Está usando os dados da placa quando há um veículo identificado com valor
+  // FIPE confirmado.
+  const usingPlate = !!identified && identified.candidates.length > 0;
+  const chosen = usingPlate
+    ? identified!.candidates[Math.min(candidateIdx, identified!.candidates.length - 1)]
+    : null;
+
+  const fipeType = usingPlate ? chosen!.fipeType : manualFipeType;
+  const fipeValue = usingPlate ? chosen!.value : manualFipeValue;
   const maxPrice = fipeValue ? Math.floor(fipeValue * 0.85) : null;
+
+  // Valores enviados no submit: da placa quando identificado, senão dos selects.
+  const brandCodeField = usingPlate ? chosen!.brandCode : brand;
+  const modelCodeField = usingPlate ? chosen!.modelCode : model;
+  const yearCodeField = usingPlate ? chosen!.yearCode : year;
 
   useEffect(() => {
     setBrands([]);
@@ -49,23 +99,23 @@ export default function AnunciarForm() {
     setModel("");
     setYears([]);
     setYear("");
-    setFipeValue(null);
+    setManualFipeValue(null);
     setLoading("marcas");
-    fipe(`type=${fipeType}`)
+    fipe(`type=${manualFipeType}`)
       .then((d) => setBrands(d as FipeOption[]))
       .catch(() => setBrands([]))
       .finally(() => setLoading(null));
-  }, [fipeType]);
+  }, [manualFipeType]);
 
   useEffect(() => {
     setModels([]);
     setModel("");
     setYears([]);
     setYear("");
-    setFipeValue(null);
+    setManualFipeValue(null);
     if (!brand) return;
     setLoading("modelos");
-    fipe(`type=${fipeType}&brand=${brand}`)
+    fipe(`type=${manualFipeType}&brand=${brand}`)
       .then((d) => setModels(d as FipeOption[]))
       .catch(() => setModels([]))
       .finally(() => setLoading(null));
@@ -75,10 +125,10 @@ export default function AnunciarForm() {
   useEffect(() => {
     setYears([]);
     setYear("");
-    setFipeValue(null);
+    setManualFipeValue(null);
     if (!model) return;
     setLoading("anos");
-    fipe(`type=${fipeType}&brand=${brand}&model=${model}`)
+    fipe(`type=${manualFipeType}&brand=${brand}&model=${model}`)
       .then((d) => setYears(d as FipeOption[]))
       .catch(() => setYears([]))
       .finally(() => setLoading(null));
@@ -86,10 +136,10 @@ export default function AnunciarForm() {
   }, [model]);
 
   useEffect(() => {
-    setFipeValue(null);
+    setManualFipeValue(null);
     if (!year) return;
     setLoading("valor FIPE");
-    fipe(`type=${fipeType}&brand=${brand}&model=${model}&year=${year}`)
+    fipe(`type=${manualFipeType}&brand=${brand}&model=${model}&year=${year}`)
       .then((d) => {
         const data = d as { price?: string };
         const v = Number(
@@ -97,16 +147,136 @@ export default function AnunciarForm() {
             .replace(/[^\d,]/g, "")
             .replace(",", "."),
         );
-        setFipeValue(v > 0 ? v : null);
+        setManualFipeValue(v > 0 ? v : null);
       })
-      .catch(() => setFipeValue(null))
+      .catch(() => setManualFipeValue(null))
       .finally(() => setLoading(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
+  async function buscarPlaca() {
+    const p = plate.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    if (p.length < 7) {
+      setPlateError("Digite uma placa válida (7 caracteres).");
+      return;
+    }
+    setPlateLoading(true);
+    setPlateError(null);
+    try {
+      const res = await fetch(`/api/placa?placa=${p}`);
+      if (!res.ok) {
+        const e = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(e.error ?? "Não encontramos dados para esta placa.");
+      }
+      const data = (await res.json()) as PlacaResult;
+      setIdentified(data);
+      setCandidateIdx(0);
+      if (data.category) setCategory(data.category);
+      if (data.cor) setCor(data.cor);
+      if (data.combustivel) setCombustivel(data.combustivel);
+      if (data.cambio) setCambio(data.cambio);
+      if (data.candidates.length === 0) {
+        setPlateError(
+          "Identificamos o veículo, mas não o valor FIPE automaticamente. Selecione marca, modelo e ano abaixo.",
+        );
+      }
+    } catch (e) {
+      setIdentified(null);
+      setPlateError(e instanceof Error ? e.message : "Erro ao consultar a placa.");
+    } finally {
+      setPlateLoading(false);
+    }
+  }
+
+  function editarManual() {
+    setIdentified(null);
+    setPlateError(null);
+  }
+
   return (
     <form action={createListing} className="mt-5 flex flex-col gap-4">
-      {/* Veículo (FIPE) */}
+      {/* Busca inteligente por placa */}
+      <section className="rounded-2xl border border-emerald-500/40 bg-emerald-500/5 p-4">
+        <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+          ✨ Preenchimento por IA
+        </h2>
+        <p className="mt-1 text-xs text-mute">
+          Digite a placa e nossa IA preenche marca, modelo, ano, cor e o valor
+          FIPE automaticamente.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <input
+            value={plate}
+            onChange={(e) => setPlate(e.target.value.toUpperCase())}
+            placeholder="ABC1D23"
+            maxLength={8}
+            className={`${inputClass} flex-1 font-semibold uppercase tracking-widest`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                buscarPlaca();
+              }
+            }}
+          />
+          <button
+            type="button"
+            onClick={buscarPlaca}
+            disabled={plateLoading}
+            className="rounded-xl bg-emerald-500 px-4 text-sm font-bold text-emerald-950 transition hover:bg-emerald-400 disabled:opacity-50"
+          >
+            {plateLoading ? "Buscando…" : "Buscar ✨"}
+          </button>
+        </div>
+
+        {plateError && (
+          <p className="mt-2 text-xs text-red-600 dark:text-red-400">{plateError}</p>
+        )}
+
+        {identified && (
+          <div className="mt-3 rounded-xl border border-line bg-card p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                  Veículo identificado
+                </p>
+                <p className="mt-0.5 text-sm font-bold">
+                  {identified.marca} {identified.modelo}
+                  {identified.modelYear ? ` · ${identified.modelYear}` : ""}
+                </p>
+                {identified.cor && (
+                  <p className="text-xs text-mute">Cor: {identified.cor}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={editarManual}
+                className="shrink-0 text-xs font-semibold text-mute underline"
+              >
+                Preencher manual
+              </button>
+            </div>
+
+            {identified.candidates.length > 1 && (
+              <label className="mt-3 block text-xs text-mute">
+                Confirme a versão (FIPE):
+                <select
+                  value={candidateIdx}
+                  onChange={(e) => setCandidateIdx(Number(e.target.value))}
+                  className={`${inputClass} mt-1 w-full`}
+                >
+                  {identified.candidates.map((c, i) => (
+                    <option key={c.codeFipe} value={i}>
+                      {c.label} — {formatBRL(c.value)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Veículo */}
       <section className="rounded-2xl border border-line bg-card p-4">
         <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
           Veículo
@@ -124,58 +294,68 @@ export default function AnunciarForm() {
               </option>
             ))}
           </select>
-          <select
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-            className={`${inputClass} col-span-2`}
-            required
-          >
-            <option value="">Marca…</option>
-            {brands.map((b) => (
-              <option key={b.code} value={b.code}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className={`${inputClass} col-span-2`}
-            disabled={!brand}
-            required
-          >
-            <option value="">Modelo…</option>
-            {models.map((m) => (
-              <option key={m.code} value={m.code}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className={inputClass}
-            disabled={!model}
-            required
-          >
-            <option value="">Ano…</option>
-            {years.map((y) => (
-              <option key={y.code} value={y.code}>
-                {y.name}
-              </option>
-            ))}
-          </select>
+
+          {usingPlate ? (
+            <div className="col-span-2 rounded-xl bg-emerald-500/10 px-3 py-2 text-sm">
+              {chosen!.label}
+            </div>
+          ) : (
+            <>
+              <select
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                className={`${inputClass} col-span-2`}
+                required
+              >
+                <option value="">Marca…</option>
+                {brands.map((b) => (
+                  <option key={b.code} value={b.code}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className={`${inputClass} col-span-2`}
+                disabled={!brand}
+                required
+              >
+                <option value="">Modelo…</option>
+                {models.map((m) => (
+                  <option key={m.code} value={m.code}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                className={inputClass}
+                disabled={!model}
+                required
+              >
+                <option value="">Ano…</option>
+                {years.map((y) => (
+                  <option key={y.code} value={y.code}>
+                    {y.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+
           <input
             name="mileage_km"
             type="number"
             min={0}
             placeholder="Quilometragem"
-            className={inputClass}
+            className={`${inputClass} ${usingPlate ? "col-span-2" : ""}`}
             required
           />
         </div>
 
-        {loading && (
+        {loading && !usingPlate && (
           <p className="mt-2 text-xs text-mute">Carregando {loading}…</p>
         )}
         {fipeValue && (
@@ -189,9 +369,9 @@ export default function AnunciarForm() {
         )}
 
         <input type="hidden" name="fipe_type" value={fipeType} />
-        <input type="hidden" name="brand_code" value={brand} />
-        <input type="hidden" name="model_code" value={model} />
-        <input type="hidden" name="year_code" value={year} />
+        <input type="hidden" name="brand_code" value={brandCodeField} />
+        <input type="hidden" name="model_code" value={modelCodeField} />
+        <input type="hidden" name="year_code" value={yearCodeField} />
       </section>
 
       {/* Preço e localização */}
@@ -226,15 +406,31 @@ export default function AnunciarForm() {
           Ficha do veículo
         </h2>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <input name="color" placeholder="Cor" className={inputClass} />
-          <select name="transmission" defaultValue="" className={inputClass}>
+          <input
+            name="color"
+            value={cor}
+            onChange={(e) => setCor(e.target.value)}
+            placeholder="Cor"
+            className={inputClass}
+          />
+          <select
+            name="transmission"
+            value={cambio}
+            onChange={(e) => setCambio(e.target.value)}
+            className={inputClass}
+          >
             <option value="">Câmbio…</option>
             <option value="manual">Manual</option>
             <option value="automatico">Automático</option>
             <option value="cvt">CVT</option>
             <option value="automatizado">Automatizado</option>
           </select>
-          <select name="fuel" defaultValue="" className={inputClass}>
+          <select
+            name="fuel"
+            value={combustivel}
+            onChange={(e) => setCombustivel(e.target.value)}
+            className={inputClass}
+          >
             <option value="">Combustível…</option>
             <option value="flex">Flex</option>
             <option value="gasolina">Gasolina</option>
