@@ -174,11 +174,11 @@ function MatchSheetBody({ matchCount }: { matchCount: number }) {
             }. `
           : ""}
         O Catir cruza os bens da sua garagem com este anúncio e sugere as
-        melhores trocas (catira). Cadastre o seu veículo para receber matches.
+        melhores trocas (catira). Cadastre o seu veículo para receber catiras.
       </p>
       <div className="mt-4 grid gap-2">
         <Link href="/entrar" className={sheetPrimary}>
-          Entrar para ver meus matches
+          Entrar para ver minhas catiras
         </Link>
         <Link href="/anunciar" className={sheetSecondary}>
           Anunciar meu veículo
@@ -237,7 +237,7 @@ export function FeedActions({
           onClick={() => setSheet("match")}
           className="rounded-xl bg-zinc-800/90 py-3 transition hover:bg-zinc-700"
         >
-          ⇄ Match
+          ⇄ Catira
         </button>
         <Link
           href={`/anuncio/${listingId}`}
@@ -257,7 +257,7 @@ export function FeedActions({
       <Sheet
         open={sheet === "match"}
         onClose={() => setSheet(null)}
-        title="Match inteligente"
+        title="Catira inteligente"
       >
         <MatchSheetBody matchCount={matchCount} />
       </Sheet>
@@ -285,7 +285,7 @@ export function DetailActions({ listingId }: { listingId: string }) {
           onClick={() => setSheet("match")}
           className="rounded-xl bg-indigo-600 py-3 text-white transition hover:bg-indigo-500"
         >
-          ⇄ Solicitar match
+          ⇄ Solicitar catira
         </button>
       </div>
       <button
@@ -310,7 +310,7 @@ export function DetailActions({ listingId }: { listingId: string }) {
       <Sheet
         open={sheet === "match"}
         onClose={() => setSheet(null)}
-        title="Match inteligente"
+        title="Catira inteligente"
       >
         <MatchSheetBody matchCount={0} />
       </Sheet>
