@@ -29,7 +29,7 @@ interface ListingDetail {
   acceptsCashComplement: boolean;
   acceptedCategories: AssetCategory[];
   sellerName: string | null;
-  photoUrl: string | null;
+  photoUrls: string[];
   damageSeverity: DamageSeverity;
   auctionHistory: boolean;
   hasLien: boolean;
@@ -56,7 +56,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
       ...m,
       acceptsCashComplement: false,
       sellerName: null,
-      photoUrl: null,
+      photoUrls: [],
       damageSeverity: "nenhum" as DamageSeverity,
       auctionHistory: false,
       hasLien: false,
@@ -123,12 +123,13 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
     doors: data.doors,
     plateEnd: data.plate_end,
     conditionNotes: data.condition_notes,
-    photoUrl: photoPublicUrl(
-      [...(data.listing_photos ?? [])].sort(
+    photoUrls: [...(data.listing_photos ?? [])]
+      .sort(
         (a: { position: number }, b: { position: number }) =>
           a.position - b.position,
-      )[0]?.storage_path ?? null,
-    ),
+      )
+      .map((p: { storage_path: string }) => photoPublicUrl(p.storage_path))
+      .filter((u: string | null): u is string => u !== null),
   };
 }
 
@@ -147,10 +148,10 @@ export default async function AnuncioPage({
   return (
     <main className="mx-auto min-h-dvh max-w-md pb-24">
       <div className="relative h-72 overflow-hidden bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950">
-        {listing.photoUrl && (
+        {listing.photoUrls[0] && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={listing.photoUrl}
+            src={listing.photoUrls[0]}
             alt={`${listing.brand} ${listing.model}`}
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -165,6 +166,20 @@ export default async function AnuncioPage({
           {percent}% da FIPE
         </span>
       </div>
+
+      {listing.photoUrls.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto px-5 pt-3">
+          {listing.photoUrls.map((url, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={url}
+              src={url}
+              alt={`${listing.brand} ${listing.model} foto ${i + 1}`}
+              className="h-20 w-28 shrink-0 rounded-lg object-cover"
+            />
+          ))}
+        </div>
+      )}
 
       <div className="px-5 pt-5">
         <h1 className="text-2xl font-bold leading-tight">
