@@ -1,7 +1,8 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import ThemeToggle from "@/components/ThemeToggle";
-import { fetchFeedListings } from "@/lib/supabase";
+import { fetchActiveAds, fetchFeedListings, type Ad } from "@/lib/supabase";
 import {
   fipePercent,
   formatBRL,
@@ -85,8 +86,45 @@ function StockCard({ listing }: { listing: Listing }) {
   );
 }
 
+// Banner retangular estreito, largura total, entre os veículos
+function AdBanner({ ad }: { ad: Ad }) {
+  const banner = (
+    <div
+      className="relative col-span-2 h-20 overflow-hidden rounded-2xl border border-line"
+      style={{ backgroundColor: ad.bgColor ?? undefined }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={ad.imageUrl}
+        alt={ad.advertiser}
+        className="mx-auto h-full object-contain px-6 py-2"
+      />
+      <span className="absolute right-2 top-1.5 rounded bg-black/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/80">
+        Publicidade
+      </span>
+    </div>
+  );
+
+  return ad.targetUrl ? (
+    <a
+      href={ad.targetUrl}
+      target="_blank"
+      rel="noopener sponsored"
+      className="col-span-2"
+    >
+      {banner}
+    </a>
+  ) : (
+    banner
+  );
+}
+
 export default async function HomePage() {
-  const listings = (await fetchFeedListings()) ?? mockListings;
+  const [listingsData, ads] = await Promise.all([
+    fetchFeedListings(),
+    fetchActiveAds(),
+  ]);
+  const listings = listingsData ?? mockListings;
 
   return (
     <main className="mx-auto min-h-dvh max-w-md pb-24">
@@ -167,8 +205,18 @@ export default async function HomePage() {
           {listings.length === 1 ? "veículo" : "veículos"}
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          {listings.map((listing) => (
-            <StockCard key={listing.id} listing={listing} />
+          {listings.map((listing, i) => (
+            <Fragment key={listing.id}>
+              <StockCard listing={listing} />
+              {/* Publicidade a cada 4 veículos, alternando anunciantes */}
+              {ads.length > 0 &&
+                (i + 1) % 4 === 0 &&
+                i < listings.length - 1 && (
+                  <AdBanner
+                    ad={ads[(Math.floor((i + 1) / 4) - 1) % ads.length]}
+                  />
+                )}
+            </Fragment>
           ))}
         </div>
       </section>

@@ -28,6 +28,35 @@ export function photoPublicUrl(path: string | null): string | null {
   return `${url}/storage/v1/object/public/listing-photos/${path}`;
 }
 
+export interface Ad {
+  id: string;
+  advertiser: string;
+  imageUrl: string;
+  bgColor: string | null;
+  targetUrl: string | null;
+}
+
+// Banners de publicidade exibidos entre os veículos da vitrine
+export async function fetchActiveAds(): Promise<Ad[]> {
+  const supabase = getSupabase();
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabase || !base) return [];
+
+  const { data, error } = await supabase
+    .from("ads")
+    .select("id, advertiser, image_path, bg_color, target_url")
+    .order("weight");
+  if (error || !data) return [];
+
+  return data.map((row) => ({
+    id: row.id,
+    advertiser: row.advertiser,
+    imageUrl: `${base}/storage/v1/object/public/ads/${row.image_path}`,
+    bgColor: row.bg_color,
+    targetUrl: row.target_url,
+  }));
+}
+
 const photoGradients = [
   "from-slate-700 via-slate-800 to-slate-950",
   "from-zinc-600 via-zinc-800 to-black",
