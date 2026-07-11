@@ -321,17 +321,36 @@ export function FeedActions({
   listingId,
   matchCount,
   isAuthenticated,
+  isOwner,
   listingTitle,
   listingPrice,
 }: {
   listingId: string;
   matchCount: number;
   isAuthenticated: boolean;
+  isOwner?: boolean;
   listingTitle?: string;
   listingPrice?: number;
 }) {
   const { saved, toggle } = useSaved(listingId);
   const [sheet, setSheet] = useState<SheetKind>(null);
+
+  // No próprio anúncio não faz sentido favoritar/contatar/propor catira
+  if (isOwner) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="rounded-xl bg-zinc-800/90 px-3 py-3 text-sm font-medium text-zinc-300">
+          Seu anúncio
+        </span>
+        <Link
+          href={`/anuncio/${listingId}`}
+          className="flex-1 rounded-xl bg-zinc-800/90 py-3 text-center text-sm font-medium transition hover:bg-zinc-700"
+        >
+          Ver anúncio
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -411,18 +430,29 @@ export function FeedActions({
 export function DetailActions({
   listingId,
   isAuthenticated,
+  isOwner,
   sellerPhone,
   listingTitle,
   listingPrice,
 }: {
   listingId: string;
   isAuthenticated: boolean;
+  isOwner?: boolean;
   sellerPhone?: string | null;
   listingTitle?: string;
   listingPrice?: number;
 }) {
   const { saved, toggle } = useSaved(listingId);
   const [sheet, setSheet] = useState<SheetKind>(null);
+
+  // No próprio anúncio não faz sentido contato/catira/favoritar
+  if (isOwner) {
+    return (
+      <div className="rounded-xl bg-card-2 px-4 py-3 text-center text-sm font-medium text-mute">
+        Este é o seu anúncio.
+      </div>
+    );
+  }
 
   return (
     <>

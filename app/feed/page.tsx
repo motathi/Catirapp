@@ -20,9 +20,11 @@ export const revalidate = 0;
 function ListingCard({
   listing,
   isAuthenticated,
+  isOwner,
 }: {
   listing: Listing;
   isAuthenticated: boolean;
+  isOwner: boolean;
 }) {
   const percent = fipePercent(listing);
 
@@ -96,6 +98,7 @@ function ListingCard({
           listingId={listing.id}
           matchCount={listing.matchCount}
           isAuthenticated={isAuthenticated}
+          isOwner={isOwner}
           listingTitle={`${listing.brand} ${listing.model}`}
           listingPrice={listing.price}
         />
@@ -109,9 +112,19 @@ export default async function FeedPage() {
   const listings = (await fetchFeedListings()) ?? mockListings;
 
   const supabase = await createSupabaseServer();
-  const isAuthenticated = supabase
-    ? Boolean((await supabase.auth.getUser()).data.user)
-    : false;
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const isAuthenticated = Boolean(user);
+
+  // Ids dos anúncios do próprio usuário: nesses cartões não mostramos as ações
+  // de favoritar/contato/catira (não faz sentido negociar com o próprio anúncio).
+  const ownListingIds = new Set<string>();
+  if (supabase && user) {
+    const { data: mine } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("owner_id", user.id);
+    for (const l of mine ?? []) ownListingIds.add(l.id);
+  }
 
   return (
     // O modo descoberta é sempre escuro: o conteúdo vive sobre as fotos
@@ -135,6 +148,7 @@ export default async function FeedPage() {
             key={listing.id}
             listing={listing}
             isAuthenticated={isAuthenticated}
+            isOwner={ownListingIds.has(listing.id)}
           />
         ))}
       </div>

@@ -18,6 +18,7 @@ import {
 
 interface ListingDetail {
   id: string;
+  ownerId: string | null;
   brand: string;
   model: string;
   modelYear: number;
@@ -56,6 +57,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
     if (!m) return null;
     return {
       ...m,
+      ownerId: null,
       acceptsCashComplement: false,
       sellerName: null,
       sellerPhone: null,
@@ -80,7 +82,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
   const { data } = await supabase
     .from("listings")
     .select(
-      `id, brand, model, model_year, mileage_km, city, state, price,
+      `id, owner_id, brand, model, model_year, mileage_km, city, state, price,
        fipe_value, accepts_trade, accepts_cash_complement,
        damage_severity, auction_history, has_lien, mechanical_issues,
        single_owner, armored, ipva_paid, licensed, color, transmission,
@@ -98,6 +100,7 @@ async function loadListing(id: string): Promise<ListingDetail | null> {
     : data.profiles;
   return {
     id: data.id,
+    ownerId: data.owner_id ?? null,
     brand: data.brand,
     model: data.model,
     modelYear: data.model_year,
@@ -147,9 +150,13 @@ export default async function AnuncioPage({
   if (!listing) notFound();
 
   const supabase = await createSupabaseServer();
-  const isAuthenticated = supabase
-    ? Boolean((await supabase.auth.getUser()).data.user)
-    : false;
+  const currentUser = supabase
+    ? (await supabase.auth.getUser()).data.user
+    : null;
+  const isAuthenticated = Boolean(currentUser);
+  const isOwner = Boolean(
+    currentUser && listing.ownerId && currentUser.id === listing.ownerId,
+  );
 
   const percent = Math.round((listing.price / listing.fipeValue) * 100);
   const savings = listing.fipeValue - listing.price;
@@ -359,6 +366,7 @@ export default async function AnuncioPage({
           <DetailActions
             listingId={listing.id}
             isAuthenticated={isAuthenticated}
+            isOwner={isOwner}
             sellerPhone={isAuthenticated ? listing.sellerPhone : null}
             listingTitle={`${listing.brand} ${listing.model}`}
             listingPrice={listing.price}
