@@ -8,11 +8,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#f4f4f5",
 };
 
-// Aplica o tema salvo (ou o do sistema) antes da primeira pintura
-const themeInit = `try{var t=localStorage.getItem('catirapp-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+// Padrão é fundo branco (claro); o escuro só é aplicado se o usuário escolher
+// explicitamente. A escolha persiste em localStorage e é aplicada antes da
+// primeira pintura.
+const themeInit = `try{if(localStorage.getItem('catirapp-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 
 export default function RootLayout({
   children,
