@@ -23,8 +23,11 @@ interface FeedRow {
 }
 
 export function photoPublicUrl(path: string | null): string | null {
+  if (!path) return null;
+  // Fotos externas (ex.: acervo público de imagens) já vêm como URL absoluta.
+  if (/^https?:\/\//i.test(path)) return path;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url || !path) return null;
+  if (!url) return null;
   return `${url}/storage/v1/object/public/listing-photos/${path}`;
 }
 

@@ -34,6 +34,8 @@ Catirapp é um marketplace de veículos focado em oportunidades reais: toda ofer
 
 Conta de demonstração: `demo1@catirapp.demo` / `catirapp123` (há `demo1`–`demo6`, cada uma dona de um anúncio do seed).
 
+Revendas de demonstração: `revenda1@catirapp.demo`–`revenda4@catirapp.demo` / `catirapp123` — 4 contas fictícias (plano premium) que juntas anunciam 40 veículos usados com foto, semeados por `supabase/migrations/0020_seed_used_vehicles.sql`.
+
 ## Desenvolvimento
 
 ```bash
