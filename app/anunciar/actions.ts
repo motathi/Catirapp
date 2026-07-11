@@ -128,8 +128,12 @@ export async function createListing(formData: FormData) {
       .insert(trades.map((category) => ({ listing_id: listing.id, category })));
   }
 
-  const photo = formData.get("foto");
-  if (photo instanceof File && photo.size > 0) {
+  const photos = formData
+    .getAll("foto")
+    .filter((f): f is File => f instanceof File && f.size > 0)
+    .slice(0, 8);
+  let position = 0;
+  for (const photo of photos) {
     const ext = (photo.name.split(".").pop() || "jpg").toLowerCase();
     const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabase.storage
@@ -138,7 +142,8 @@ export async function createListing(formData: FormData) {
     if (!upErr) {
       await supabase
         .from("listing_photos")
-        .insert({ listing_id: listing.id, storage_path: path, position: 0 });
+        .insert({ listing_id: listing.id, storage_path: path, position });
+      position += 1;
     }
   }
 

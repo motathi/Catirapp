@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { createListing } from "@/app/anunciar/actions";
 import { categoryLabel, formatBRL } from "@/lib/listings";
+import { BRAZIL_STATES } from "@/lib/brazil";
+
+const MAX_FOTOS = 8;
 
 interface FipeOption {
   code: string;
@@ -66,6 +69,24 @@ export default function AnunciarForm() {
   const [cor, setCor] = useState("");
   const [combustivel, setCombustivel] = useState("");
   const [cambio, setCambio] = useState("");
+
+  // Final da placa (autopreenchido a partir da placa digitada no topo).
+  const [finalPlaca, setFinalPlaca] = useState("");
+
+  // Estado e cidade (cidade carregada do IBGE conforme o estado).
+  const [estado, setEstado] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [cidades, setCidades] = useState<string[]>([]);
+  const [loadingCidades, setLoadingCidades] = useState(false);
+  const [cidadesErro, setCidadesErro] = useState(false);
+
+  // Catira: categorias aceitas na troca (controlado para o "selecionar todas").
+  const catiraOptions = Object.keys(categoryLabel);
+  const [aceita, setAceita] = useState<string[]>([]);
+  const todasAceitas = aceita.length === catiraOptions.length;
+
+  // Fotos (até MAX_FOTOS).
+  const [fotosCount, setFotosCount] = useState(0);
 
   // Busca inteligente por placa.
   const [plate, setPlate] = useState("");
@@ -154,6 +175,22 @@ export default function AnunciarForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
+  // Carrega os municípios do estado selecionado (API pública do IBGE).
+  useEffect(() => {
+    setCidade("");
+    setCidades([]);
+    setCidadesErro(false);
+    if (!estado) return;
+    setLoadingCidades(true);
+    fetch(
+      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios?orderBy=nome`,
+    )
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((arr: { nome: string }[]) => setCidades(arr.map((m) => m.nome)))
+      .catch(() => setCidadesErro(true))
+      .finally(() => setLoadingCidades(false));
+  }, [estado]);
+
   async function buscarPlaca() {
     const p = plate.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     if (p.length < 7) {
@@ -175,6 +212,9 @@ export default function AnunciarForm() {
       if (data.cor) setCor(data.cor);
       if (data.combustivel) setCombustivel(data.combustivel);
       if (data.cambio) setCambio(data.cambio);
+      // Final da placa = último dígito da placa digitada.
+      const digits = p.replace(/\D/g, "");
+      if (digits) setFinalPlaca(digits.slice(-1));
       if (data.candidates.length === 0) {
         setPlateError(
           "Identificamos o veículo, mas não o valor FIPE automaticamente. Selecione marca, modelo e ano abaixo.",
@@ -389,14 +429,49 @@ export default function AnunciarForm() {
             className={`${inputClass} col-span-2`}
             required
           />
-          <input name="city" placeholder="Cidade" className={inputClass} required />
-          <input
+          <select
             name="state"
-            maxLength={2}
-            placeholder="UF"
-            className={`${inputClass} uppercase`}
+            value={estado}
+            onChange={(e) => setEstado(e.target.value)}
+            className={inputClass}
             required
-          />
+          >
+            <option value="">Estado…</option>
+            {BRAZIL_STATES.map((s) => (
+              <option key={s.uf} value={s.uf}>
+                {s.nome} ({s.uf})
+              </option>
+            ))}
+          </select>
+
+          {cidadesErro ? (
+            <input
+              name="city"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              placeholder="Cidade"
+              className={inputClass}
+              required
+            />
+          ) : (
+            <select
+              name="city"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              className={inputClass}
+              disabled={!estado || loadingCidades}
+              required
+            >
+              <option value="">
+                {loadingCidades ? "Carregando…" : "Cidade…"}
+              </option>
+              {cidades.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </section>
 
@@ -452,6 +527,8 @@ export default function AnunciarForm() {
             type="number"
             min={0}
             max={9}
+            value={finalPlaca}
+            onChange={(e) => setFinalPlaca(e.target.value)}
             placeholder="Final da placa"
             className={inputClass}
           />
@@ -497,14 +574,36 @@ export default function AnunciarForm() {
 
       {/* Catira */}
       <section className="rounded-2xl border border-line bg-card p-4">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
-          Aceita na troca (catira)
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
+            Aceita na troca (catira)
+          </h2>
+          <button
+            type="button"
+            onClick={() => setAceita(todasAceitas ? [] : [...catiraOptions])}
+            className="text-xs font-semibold text-emerald-600 underline dark:text-emerald-400"
+          >
+            {todasAceitas ? "Limpar" : "Selecionar todas"}
+          </button>
+        </div>
         <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1.5 text-sm">
-          {Object.entries(categoryLabel).map(([value, label]) => (
+          {catiraOptions.map((value) => (
             <label key={value} className="flex items-center gap-2">
-              <input type="checkbox" name="aceita" value={value} className="h-4 w-4 accent-emerald-500" />
-              {label}
+              <input
+                type="checkbox"
+                name="aceita"
+                value={value}
+                checked={aceita.includes(value)}
+                onChange={(e) =>
+                  setAceita((prev) =>
+                    e.target.checked
+                      ? [...prev, value]
+                      : prev.filter((v) => v !== value),
+                  )
+                }
+                className="h-4 w-4 accent-emerald-500"
+              />
+              {categoryLabel[value as keyof typeof categoryLabel]}
             </label>
           ))}
         </div>
@@ -514,12 +613,37 @@ export default function AnunciarForm() {
         </label>
       </section>
 
-      {/* Foto */}
+      {/* Fotos */}
       <section className="rounded-2xl border border-line bg-card p-4">
         <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
-          Foto principal
+          Fotos do veículo
         </h2>
-        <input name="foto" type="file" accept="image/*" className="mt-3 w-full text-sm text-mute" />
+        <p className="mt-1 text-xs text-mute">
+          Até {MAX_FOTOS} fotos. A primeira é a foto principal do anúncio.
+        </p>
+        <input
+          name="foto"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            if (files.length > MAX_FOTOS) {
+              e.target.value = "";
+              setFotosCount(0);
+              alert(`Selecione no máximo ${MAX_FOTOS} fotos.`);
+              return;
+            }
+            setFotosCount(files.length);
+          }}
+          className="mt-3 w-full text-sm text-mute"
+        />
+        {fotosCount > 0 && (
+          <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+            {fotosCount} foto{fotosCount > 1 ? "s" : ""} selecionada
+            {fotosCount > 1 ? "s" : ""}.
+          </p>
+        )}
       </section>
 
       <button
