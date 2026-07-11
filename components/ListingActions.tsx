@@ -5,10 +5,13 @@ import {
   useEffect,
   useState,
   useSyncExternalStore,
+  useTransition,
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toggleSavedListing } from "@/app/feed/actions";
+import { startListingMessage } from "@/app/mensagens/actions";
 
 // -----------------------------------------------------------------------------
 // Favoritos: persistem no navegador (funciona para visitantes anônimos) e, quando
@@ -179,47 +182,93 @@ function ContactSheetBody({
     );
   }
 
-  // Logado, com telefone do vendedor: fala direto no WhatsApp
-  if (sellerPhone) {
-    return (
-      <>
-        <p>
-          Fale com quem anunciou pelo WhatsApp. Combine a visita, a negociação e
-          uma possível catira com segurança.
-        </p>
-        <div className="mt-4 grid gap-2">
-          <a
-            href={waLink(
-              sellerPhone,
-              "Olá! Vi seu anúncio no Catir e tenho interesse.",
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={sheetPrimary}
-          >
-            Falar no WhatsApp
-          </a>
-          <Link href={`/anuncio/${listingId}`} className={sheetSecondary}>
-            Ver detalhes do anúncio
-          </Link>
-        </div>
-      </>
-    );
+  // Logado: telefone/WhatsApp (quando disponível) + mensagem dentro do app
+  return <ContactOptions listingId={listingId} sellerPhone={sellerPhone} />;
+}
+
+function ContactOptions({
+  listingId,
+  sellerPhone,
+}: {
+  listingId: string;
+  sellerPhone?: string | null;
+}) {
+  const router = useRouter();
+  const [body, setBody] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const phoneDigits = sellerPhone ? sellerPhone.replace(/\D/g, "") : "";
+
+  function sendMessage() {
+    const text = body.trim();
+    if (!text || pending) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await startListingMessage(listingId, text);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      router.push(`/mensagens/${res.conversationId}`);
+    });
   }
 
-  // Logado, sem telefone à mão (ex.: cartão do feed): leva ao detalhe
   return (
-    <>
-      <p>
-        Abra o anúncio para ver os dados de contato de quem anunciou e negociar
-        com segurança.
-      </p>
-      <div className="mt-4 grid gap-2">
-        <Link href={`/anuncio/${listingId}`} className={sheetPrimary}>
-          Ver anúncio e falar com o vendedor
+    <div className="grid gap-4">
+      {/* Telefone + WhatsApp */}
+      {sellerPhone ? (
+        <div className="rounded-2xl bg-zinc-800/70 p-3">
+          <p className="text-xs uppercase tracking-wide text-zinc-400">
+            Telefone
+          </p>
+          <p className="mt-0.5 text-lg font-semibold text-zinc-100">
+            {sellerPhone}
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <a
+              href={waLink(
+                sellerPhone,
+                "Olá! Vi seu anúncio no Catir e tenho interesse.",
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={sheetPrimary}
+            >
+              WhatsApp
+            </a>
+            <a href={`tel:${phoneDigits}`} className={sheetSecondary}>
+              Ligar
+            </a>
+          </div>
+        </div>
+      ) : (
+        <Link href={`/anuncio/${listingId}`} className={sheetSecondary}>
+          Ver telefone e WhatsApp no anúncio
         </Link>
+      )}
+
+      {/* Mensagem dentro do app */}
+      <div>
+        <p className="text-xs uppercase tracking-wide text-zinc-400">
+          Mensagem pelo Catir
+        </p>
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={3}
+          placeholder="Escreva sua mensagem para o vendedor…"
+          className="mt-1.5 w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-emerald-500"
+        />
+        {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+        <button
+          onClick={sendMessage}
+          disabled={pending || !body.trim()}
+          className={`mt-2 w-full ${sheetPrimary} disabled:opacity-40`}
+        >
+          {pending ? "Enviando…" : "Enviar mensagem"}
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
