@@ -45,7 +45,7 @@ Exemplo:
 | Economia | R$ 21.000 |
 | Percentual da FIPE | 78% |
 
-### 2. Matching Inteligente
+### 2. Catira Inteligente
 
 Este é o **principal diferencial do projeto**.
 
@@ -69,7 +69,7 @@ O usuário pode visualizar todas essas possibilidades sem precisar pesquisar man
 
 #### Contato Inteligente
 
-Ao visualizar um match, basta tocar em um botão para iniciar a conversa.
+Ao visualizar uma catira, basta tocar em um botão para iniciar a conversa.
 
 O aplicativo envia automaticamente uma mensagem como:
 
@@ -79,9 +79,9 @@ Isso reduz muito o esforço para iniciar negociações.
 
 #### Limite de contatos
 
-O envio de contatos através do Matching será o principal incentivo para contratação dos planos pagos.
+O envio de contatos através da Catira Inteligente será o principal incentivo para contratação dos planos pagos.
 
-| Plano | Contatos de Matching |
+| Plano | Contatos de Catira |
 | --- | --- |
 | Gratuito | 1 por dia |
 | PRO | Até 4 por dia |
@@ -136,10 +136,18 @@ Com poucos toques, o usuário pode:
 
 - Salvar
 - Entrar em contato
-- Solicitar Match
+- Fazer Catira
 - Ver detalhes
 
 Essa experiência incentiva a descoberta de oportunidades, mesmo quando o usuário ainda não sabe exatamente qual veículo procura.
+
+#### Ações que exigem autenticação
+
+As ações que representam intenção real de negociação exigem que o usuário esteja autenticado. Ao tocar em **Contato**, **Salvar** ou **Fazer Catira** sem estar logado, o aplicativo deve interromper a ação e apresentar a tela de **entrar ou criar conta**.
+
+Após o login ou cadastro, o usuário é levado de volta à ação que iniciou, concluindo-a sem precisar repetir o toque.
+
+Ações de descoberta (navegar pelo feed, ver detalhes de um anúncio) permanecem disponíveis sem login, para não criar atrito antes de o usuário perceber o valor da plataforma.
 
 ---
 
@@ -180,7 +188,7 @@ Esses itens podem ser utilizados automaticamente nas propostas de troca.
 | --- | --- | --- | --- |
 | Anúncios ativos | 1 | Até 10 | Ilimitados |
 | Anúncios por mês | Até 4 | Até 20 | Ilimitados |
-| Contatos de Matching por dia | 1 | 4 | Ilimitados |
+| Contatos de Catira por dia | 1 | 4 | Ilimitados |
 | Destaque | Sem destaque | 5 dias | 15 dias |
 | Prioridade na exibição | — | — | Maior prioridade |
 
@@ -209,7 +217,7 @@ Lançar a plataforma focada exclusivamente em veículos anunciados abaixo do per
 
 **Objetivo:** construir reputação como *o lugar* para encontrar bons negócios.
 
-### Fase 2 – Matching Inteligente
+### Fase 2 – Catira Inteligente
 
 Adicionar o algoritmo de compatibilidade para sugerir automaticamente oportunidades de compra e troca entre os usuários.
 
