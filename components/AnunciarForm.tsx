@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import { createListing } from "@/app/anunciar/actions";
 import { createSupabaseBrowser } from "@/lib/supabase-browser";
 import { categoryLabel, formatBRL } from "@/lib/listings";
@@ -86,8 +92,27 @@ export default function AnunciarForm() {
   const [aceita, setAceita] = useState<string[]>([]);
   const todasAceitas = aceita.length === catiraOptions.length;
 
-  // Fotos (até MAX_FOTOS).
-  const [fotosCount, setFotosCount] = useState(0);
+  // Fotos (até MAX_FOTOS) — gerenciadas em estado para pré-visualizar/remover.
+  const [photos, setPhotos] = useState<File[]>([]);
+  const previews = useMemo(
+    () => photos.map((f) => URL.createObjectURL(f)),
+    [photos],
+  );
+  useEffect(() => {
+    return () => previews.forEach((u) => URL.revokeObjectURL(u));
+  }, [previews]);
+
+  function addPhotos(list: FileList | null) {
+    if (!list) return;
+    const incoming = Array.from(list).filter((f) =>
+      f.type.startsWith("image/"),
+    );
+    if (incoming.length === 0) return;
+    setPhotos((prev) => [...prev, ...incoming].slice(0, MAX_FOTOS));
+  }
+  function removePhoto(i: number) {
+    setPhotos((prev) => prev.filter((_, idx) => idx !== i));
+  }
 
   // Envio do formulário (upload das fotos no cliente + server action).
   const [submitting, startSubmit] = useTransition();
@@ -245,13 +270,10 @@ export default function AnunciarForm() {
     setSubmitError(null);
 
     const formData = new FormData(e.currentTarget);
-    const files = formData
-      .getAll("foto")
-      .filter((f): f is File => f instanceof File && f.size > 0)
-      .slice(0, MAX_FOTOS);
-    // Os arquivos não vão no corpo da server action (limite de tamanho);
-    // sobem direto para o Storage aqui e enviamos só os caminhos.
-    formData.delete("foto");
+    // As fotos são gerenciadas em estado (previews/remover) e não vão no corpo
+    // da server action (limite de tamanho): sobem direto para o Storage aqui e
+    // enviamos só os caminhos.
+    const files = photos.slice(0, MAX_FOTOS);
 
     if (files.length > 0) {
       const supabase = createSupabaseBrowser();
@@ -685,29 +707,100 @@ export default function AnunciarForm() {
           Fotos do veículo
         </h2>
         <p className="mt-1 text-xs text-mute">
-          Até {MAX_FOTOS} fotos. A primeira é a foto principal do anúncio.
+          Anúncios com fotos vendem muito mais. Até {MAX_FOTOS} fotos — a
+          primeira é a capa.
         </p>
-        <input
-          name="foto"
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []);
-            if (files.length > MAX_FOTOS) {
-              e.target.value = "";
-              setFotosCount(0);
-              alert(`Selecione no máximo ${MAX_FOTOS} fotos.`);
-              return;
-            }
-            setFotosCount(files.length);
-          }}
-          className="mt-3 w-full text-sm text-mute"
-        />
-        {fotosCount > 0 && (
-          <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
-            {fotosCount} foto{fotosCount > 1 ? "s" : ""} selecionada
-            {fotosCount > 1 ? "s" : ""}.
+
+        {photos.length === 0 ? (
+          // Área grande e clara para adicionar as primeiras fotos
+          <label className="mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-card-2/40 px-4 py-10 text-center transition hover:border-emerald-500 hover:bg-emerald-500/5">
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-emerald-500"
+              aria-hidden
+            >
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z" />
+              <circle cx="12" cy="13" r="3.2" />
+              <path d="M12 10.5v5M9.5 13h5" />
+            </svg>
+            <span className="text-base font-semibold text-ink">
+              Toque para adicionar fotos
+            </span>
+            <span className="text-xs text-mute">
+              Câmera ou galeria · até {MAX_FOTOS} fotos
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                addPhotos(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        ) : (
+          // Miniaturas com capa e remover + tile para adicionar mais
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {previews.map((url, i) => (
+              <div
+                key={url}
+                className="group relative aspect-square overflow-hidden rounded-xl border border-line"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={`Foto ${i + 1}`}
+                  className="h-full w-full object-cover"
+                />
+                {i === 0 && (
+                  <span className="absolute left-1 top-1 rounded bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-emerald-950">
+                    Capa
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  aria-label={`Remover foto ${i + 1}`}
+                  className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-sm text-white transition hover:bg-black/80"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_FOTOS && (
+              <label className="grid aspect-square cursor-pointer place-items-center rounded-xl border-2 border-dashed border-line text-center text-mute transition hover:border-emerald-500 hover:text-emerald-500">
+                <span className="flex flex-col items-center gap-0.5">
+                  <span className="text-2xl leading-none">＋</span>
+                  <span className="text-[11px] font-medium">Adicionar</span>
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    addPhotos(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+          </div>
+        )}
+
+        {photos.length > 0 && (
+          <p className="mt-2 text-xs text-mute">
+            {photos.length} de {MAX_FOTOS} foto{photos.length > 1 ? "s" : ""}{" "}
+            selecionada{photos.length > 1 ? "s" : ""} · toque em ✕ para remover
           </p>
         )}
       </section>
