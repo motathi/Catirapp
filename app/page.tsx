@@ -4,7 +4,8 @@ import BottomNav from "@/components/BottomNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import HomeAuthButton from "@/components/HomeAuthButton";
 import Logo from "@/components/Logo";
-import { fetchActiveAds, fetchFeedListings, type Ad } from "@/lib/supabase";
+import AdBanner from "@/components/AdBanner";
+import { fetchActiveAds, fetchFeedListings } from "@/lib/supabase";
 import {
   fipePercent,
   formatBRL,
@@ -92,40 +93,6 @@ function StockCard({ listing }: { listing: Listing }) {
 }
 
 // Banner retangular estreito, largura total, entre os veículos
-function AdBanner({ ad }: { ad: Ad }) {
-  const banner = (
-    <div
-      className="relative col-span-2 h-20 overflow-hidden rounded-2xl border border-line"
-      style={{ backgroundColor: ad.bgColor ?? undefined }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={ad.imageUrl}
-        alt={ad.advertiser}
-        loading="lazy"
-        decoding="async"
-        className="mx-auto h-full object-contain px-6 py-2"
-      />
-      <span className="absolute right-2 top-1.5 rounded bg-black/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/80">
-        Publicidade
-      </span>
-    </div>
-  );
-
-  return ad.targetUrl ? (
-    <a
-      href={ad.targetUrl}
-      target="_blank"
-      rel="noopener sponsored"
-      className="col-span-2"
-    >
-      {banner}
-    </a>
-  ) : (
-    banner
-  );
-}
-
 export default async function HomePage() {
   const [listingsData, ads] = await Promise.all([
     fetchFeedListings(),

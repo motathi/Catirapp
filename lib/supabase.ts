@@ -31,7 +31,11 @@ export function photoPublicUrl(path: string | null): string | null {
 export interface Ad {
   id: string;
   advertiser: string;
+  // Servido SEMPRE do repositório (public/ads/*): é deployado junto com o app e
+  // não depende do bucket/projeto/env — por isso os banners não somem.
   imageUrl: string;
+  // Fallback opcional (bucket do Supabase), usado só se a imagem do repo faltar.
+  fallbackUrl: string | null;
   bgColor: string | null;
   targetUrl: string | null;
 }
@@ -44,6 +48,7 @@ export const fallbackAds: Ad[] = [
     id: "loovi",
     advertiser: "Loovi Seguros",
     imageUrl: "/ads/loovi.webp",
+    fallbackUrl: null,
     bgColor: "#5578F5",
     targetUrl: "https://loovi.com.br",
   },
@@ -51,19 +56,23 @@ export const fallbackAds: Ad[] = [
     id: "uai-veiculos",
     advertiser: "UAI Veículos",
     imageUrl: "/ads/uai-veiculos.jpeg",
+    fallbackUrl: null,
     bgColor: "#0a0a0a",
     targetUrl: "https://uaiveiculos.com/",
   },
 ];
 
 // Banners de publicidade exibidos entre os veículos da vitrine.
-// Prioriza os anúncios cadastrados no Supabase; se não houver nenhum (ou o
-// backend estiver indisponível), cai nos patrocinadores versionados no repo.
+// O Supabase é usado apenas para os METADADOS do anúncio (qual anunciante, link,
+// ordenação, ativo/inativo). A IMAGEM é sempre servida do repo em `/ads/<path>`,
+// que acompanha o deploy e não depende do bucket — evitando que os banners sumam
+// quando o storage é resetado ou o env aponta para outro projeto. O bucket fica
+// só como fallback (`fallbackUrl`) para imagens que porventura não estejam no repo.
 export async function fetchActiveAds(): Promise<Ad[]> {
   const supabase = getSupabase();
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabase || !base) return fallbackAds;
+  if (!supabase) return fallbackAds;
 
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const { data, error } = await supabase
     .from("ads")
     .select("id, advertiser, image_path, bg_color, target_url")
@@ -74,7 +83,10 @@ export async function fetchActiveAds(): Promise<Ad[]> {
   return data.map((row) => ({
     id: row.id,
     advertiser: row.advertiser,
-    imageUrl: `${base}/storage/v1/object/public/ads/${row.image_path}`,
+    imageUrl: `/ads/${row.image_path}`,
+    fallbackUrl: base
+      ? `${base}/storage/v1/object/public/ads/${row.image_path}`
+      : null,
     bgColor: row.bg_color,
     targetUrl: row.target_url,
   }));
