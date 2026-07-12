@@ -581,7 +581,7 @@ export default function AnunciarForm() {
         {fipeValue && (
           <p className="mt-3 rounded-xl bg-emerald-500/10 px-3 py-2 text-sm">
             Valor FIPE: <strong>{formatBRL(fipeValue)}</strong> · preço máximo
-            no Catirapp (85%):{" "}
+            no Catire (85%):{" "}
             <strong className="text-emerald-600 dark:text-emerald-400">
               {formatBRL(maxPrice!)}
             </strong>

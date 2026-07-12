@@ -140,7 +140,7 @@ export default async function HomePage() {
         <div className="flex items-center justify-between">
           <h1 className="flex items-center">
             <Logo className="h-[58px] w-auto" />
-            <span className="sr-only">Catir</span>
+            <span className="sr-only">Catire</span>
           </h1>
           <div className="flex items-center gap-2">
             <ThemeToggle />

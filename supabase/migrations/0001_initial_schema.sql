@@ -1,4 +1,4 @@
--- Catirapp — schema inicial
+-- Catire — schema inicial
 -- Ver docs/modelo-de-dados.md para a descrição das entidades.
 
 create type asset_category as enum (

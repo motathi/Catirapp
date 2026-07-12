@@ -1,4 +1,4 @@
-// Logomarca do Catir. Sem variant, alterna automaticamente conforme o tema
+// Logomarca do Catire. Sem variant, alterna automaticamente conforme o tema
 // (imagem escura em fundo claro e vice-versa). Com variant, força uma versão
 // — usado onde o fundo é sempre escuro (ex.: modo descoberta).
 export default function Logo({
@@ -12,7 +12,7 @@ export default function Logo({
     const src =
       variant === "dark" ? "/catir-logo-dark.png" : "/catir-logo-light.png";
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="Catir" className={className} />;
+    return <img src={src} alt="Catire" className={className} />;
   }
 
   return (
@@ -20,7 +20,7 @@ export default function Logo({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/catir-logo-light.png"
-        alt="Catir"
+        alt="Catire"
         className={`${className} block dark:hidden`}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -1,8 +1,8 @@
-# Catirapp
+# Catire
 
 **O marketplace que encontra negócios para você.**
 
-Catirapp é um marketplace de veículos focado em oportunidades reais: toda oferta publicada precisa estar abaixo de um percentual da tabela FIPE, e um sistema de matching inteligente conecta automaticamente compradores, vendedores e interessados em troca (catira).
+Catire é um marketplace de veículos focado em oportunidades reais: toda oferta publicada precisa estar abaixo de um percentual da tabela FIPE, e um sistema de matching inteligente conecta automaticamente compradores, vendedores e interessados em troca (catira).
 
 🌐 **Produção:** https://catirapp-omega.vercel.app
 

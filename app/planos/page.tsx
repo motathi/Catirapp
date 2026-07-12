@@ -3,7 +3,7 @@ import BottomNav from "@/components/BottomNav";
 import PlanCTA from "@/components/PlanCTA";
 
 export const metadata = {
-  title: "Planos e pacotes — Catir",
+  title: "Planos e pacotes — Catire",
   description:
     "Assine PRO, Premium ou o Plano Lojista e destaque seus anúncios para vender mais rápido.",
 };
@@ -82,7 +82,7 @@ export default function PlanosPage() {
 
       <header className="mt-3">
         <h1 className="text-2xl font-extrabold tracking-tight">
-          Venda mais rápido no Catir
+          Venda mais rápido no Catire
         </h1>
         <p className="mt-1 text-sm text-mute">
           Mais anúncios, mais contatos e destaque no topo do feed. Escolha o
@@ -209,7 +209,7 @@ export default function PlanosPage() {
           Para anunciantes
         </h2>
         <div className="mt-3 rounded-2xl border border-line bg-card p-5">
-          <h3 className="text-lg font-extrabold">Anuncie no Catir</h3>
+          <h3 className="text-lg font-extrabold">Anuncie no Catire</h3>
           <p className="mt-1 text-sm text-mute">
             Alcance milhares de compradores de veículos com alta intenção de
             compra. Ideal para seguradoras, financiamentos, oficinas, vistorias

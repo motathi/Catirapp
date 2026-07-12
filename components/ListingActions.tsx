@@ -167,7 +167,7 @@ function ContactSheetBody({
     return (
       <>
         <p>
-          No Catir a conversa começa pelo{" "}
+          No Catire a conversa começa pelo{" "}
           <strong className="text-zinc-100">Contato Inteligente</strong>: entre
           na sua conta para falar com quem anunciou e negociar com segurança.
         </p>
@@ -229,7 +229,7 @@ function ContactOptions({
             <a
               href={waLink(
                 sellerPhone,
-                "Olá! Vi seu anúncio no Catir e tenho interesse.",
+                "Olá! Vi seu anúncio no Catire e tenho interesse.",
               )}
               target="_blank"
               rel="noopener noreferrer"
@@ -251,7 +251,7 @@ function ContactOptions({
       {/* Mensagem dentro do app */}
       <div>
         <p className="text-xs uppercase tracking-wide text-zinc-400">
-          Mensagem pelo Catir
+          Mensagem pelo Catire
         </p>
         <textarea
           value={body}

@@ -23,7 +23,7 @@ export default async function AnunciarPage({
       <h1 className="text-2xl font-extrabold tracking-tight">Anunciar</h1>
       <p className="mt-1 text-sm text-mute">
         Busque o valor FIPE do seu veículo e publique. Só entram anúncios até
-        85% da FIPE — é isso que faz do Catirapp o lugar das oportunidades.
+        85% da FIPE — é isso que faz do Catire o lugar das oportunidades.
       </p>
 
       {erro && (

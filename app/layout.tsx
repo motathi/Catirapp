@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Catirapp — O marketplace que encontra negócios para você",
+  title: "Catire — O marketplace que encontra negócios para você",
   description:
     "Oportunidades de veículos abaixo da FIPE, com matching inteligente para compra e troca (catira).",
 };

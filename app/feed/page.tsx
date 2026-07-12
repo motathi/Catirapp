@@ -148,7 +148,7 @@ export default async function FeedPage() {
         <Link href="/" className="flex items-center gap-1 text-2xl font-extrabold">
           <span className="text-zinc-300">‹</span>
           <Logo variant="dark" className="h-[53px] w-auto" />
-          <span className="sr-only">Catir</span>
+          <span className="sr-only">Catire</span>
         </Link>
         <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
           Só anúncios abaixo da FIPE
