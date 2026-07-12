@@ -18,7 +18,7 @@ export default async function PerfilPage() {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("*, plans(name, max_active_listings, daily_match_contacts)")
+        .select("*, plans(name)")
         .eq("id", user.id)
         .single(),
       supabase.from("assets").select("*").eq("owner_id", user.id),
@@ -41,14 +41,7 @@ export default async function PerfilPage() {
     matchCount = count ?? 0;
   }
 
-  const { count: contactsToday } = await supabase
-    .from("match_contacts")
-    .select("id", { count: "exact", head: true })
-    .eq("sender_id", user.id)
-    .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
   const plan = profile?.plans;
-  const dailyLimit = plan?.daily_match_contacts;
   const isFree = (profile?.plan_code ?? "free") === "free";
 
   return (
@@ -125,16 +118,6 @@ export default async function PerfilPage() {
           ›
         </span>
       </Link>
-
-      <section className="mt-6">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
-          Contatos de matching hoje
-        </h2>
-        <p className="mt-2 rounded-2xl bg-card px-4 py-3 text-sm">
-          {contactsToday ?? 0} de{" "}
-          {dailyLimit == null ? "ilimitados" : dailyLimit} usados
-        </p>
-      </section>
 
       <section className="mt-6">
         <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
