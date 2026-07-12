@@ -13,8 +13,9 @@ import {
   type Listing,
 } from "@/lib/listings";
 
-// A vitrine lê o estoque do Supabase a cada requisição
-export const revalidate = 0;
+// A vitrine não depende do usuário: cacheia por 60s (ISR) para carregar
+// instantâneo, revalidando o estoque/anúncios em segundo plano.
+export const revalidate = 60;
 
 // Menus de acesso rápido, no estilo das vitrines de marketplace
 const quickMenus = [
@@ -42,6 +43,8 @@ function StockCard({ listing }: { listing: Listing }) {
           <img
             src={listing.photoUrl}
             alt={`${listing.brand} ${listing.model}`}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         ) : (
@@ -98,6 +101,8 @@ function AdBanner({ ad }: { ad: Ad }) {
       <img
         src={ad.imageUrl}
         alt={ad.advertiser}
+        loading="lazy"
+        decoding="async"
         className="mx-auto h-full object-contain px-6 py-2"
       />
       <span className="absolute right-2 top-1.5 rounded bg-black/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/80">

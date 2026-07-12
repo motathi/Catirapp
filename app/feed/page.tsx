@@ -21,12 +21,17 @@ function ListingCard({
   listing,
   isAuthenticated,
   isOwner,
+  index,
 }: {
   listing: Listing;
   isAuthenticated: boolean;
   isOwner: boolean;
+  index: number;
 }) {
   const percent = fipePercent(listing);
+  // Só a primeira foto carrega de imediato (é o que aparece na tela); as demais
+  // carregam sob demanda conforme o usuário rola o feed.
+  const eager = index === 0;
 
   return (
     <article className="relative h-dvh snap-start overflow-hidden">
@@ -36,6 +41,9 @@ function ListingCard({
         <img
           src={listing.photoUrl}
           alt={`${listing.brand} ${listing.model}`}
+          loading={eager ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={eager ? "high" : "auto"}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
@@ -108,11 +116,17 @@ function ListingCard({
 }
 
 export default async function FeedPage() {
-  // Sem NEXT_PUBLIC_SUPABASE_* configurado, o feed usa os dados de demonstração
-  const listings = (await fetchFeedListings()) ?? mockListings;
-
+  // Feed e checagem de sessão em paralelo (sem esperar um pelo outro).
+  // Sem NEXT_PUBLIC_SUPABASE_* configurado, o feed usa os dados de demonstração.
   const supabase = await createSupabaseServer();
-  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const [listingsRaw, userRes] = await Promise.all([
+    fetchFeedListings(),
+    supabase
+      ? supabase.auth.getUser()
+      : Promise.resolve({ data: { user: null } }),
+  ]);
+  const listings = listingsRaw ?? mockListings;
+  const user = userRes.data.user;
   const isAuthenticated = Boolean(user);
 
   // Ids dos anúncios do próprio usuário: nesses cartões não mostramos as ações
@@ -143,12 +157,13 @@ export default async function FeedPage() {
 
       {/* Feed de oportunidades em tela cheia */}
       <div className="h-dvh snap-y snap-mandatory overflow-y-auto">
-        {listings.map((listing) => (
+        {listings.map((listing, index) => (
           <ListingCard
             key={listing.id}
             listing={listing}
             isAuthenticated={isAuthenticated}
             isOwner={ownListingIds.has(listing.id)}
+            index={index}
           />
         ))}
       </div>

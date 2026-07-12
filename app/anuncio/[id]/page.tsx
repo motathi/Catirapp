@@ -180,6 +180,8 @@ export default async function AnuncioPage({
           <img
             src={listing.photoUrls[0]}
             alt={`${listing.brand} ${listing.model}`}
+            decoding="async"
+            fetchPriority="high"
             className="absolute inset-0 h-full w-full object-cover"
           />
         )}
@@ -202,6 +204,8 @@ export default async function AnuncioPage({
               key={url}
               src={url}
               alt={`${listing.brand} ${listing.model} foto ${i + 1}`}
+              loading="lazy"
+              decoding="async"
               className="h-20 w-28 shrink-0 rounded-lg object-cover"
             />
           ))}

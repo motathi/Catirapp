@@ -235,6 +235,8 @@ export default async function BuscarPage({
               <img
                 src={r.photoUrl}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="h-14 w-20 shrink-0 rounded-xl object-cover"
               />
             ) : (
