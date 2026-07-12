@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import AnunciarForm from "@/components/AnunciarForm";
@@ -30,6 +31,18 @@ export default async function AnunciarPage({
           {erro}
         </p>
       )}
+
+      <Link
+        href="/planos"
+        className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-amber-400/50 bg-amber-400/10 px-4 py-3 transition hover:bg-amber-400/20"
+      >
+        <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+          ⚡ Quer vender mais rápido? Destaque seu anúncio no topo do feed
+        </span>
+        <span aria-hidden className="text-amber-700 dark:text-amber-400">
+          ›
+        </span>
+      </Link>
 
       <AnunciarForm />
 

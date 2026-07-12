@@ -49,6 +49,7 @@ export default async function PerfilPage() {
 
   const plan = profile?.plans;
   const dailyLimit = plan?.daily_match_contacts;
+  const isFree = (profile?.plan_code ?? "free") === "free";
 
   return (
     <main className="mx-auto min-h-dvh max-w-md px-5 pb-24 pt-8">
@@ -62,10 +63,27 @@ export default async function PerfilPage() {
               user.email}
           </p>
         </div>
-        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-          Plano {plan?.name ?? "Gratuito"}
-        </span>
+        <Link
+          href="/planos"
+          className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-600 transition hover:bg-emerald-500/25 dark:text-emerald-400"
+        >
+          Plano {plan?.name ?? "Gratuito"} ›
+        </Link>
       </header>
+
+      {isFree && (
+        <Link
+          href="/planos"
+          className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3.5 text-emerald-950 transition hover:from-emerald-400 hover:to-emerald-500"
+        >
+          <span className="text-sm font-bold">
+            🚀 Venda mais rápido — assine PRO ou destaque seu anúncio
+          </span>
+          <span aria-hidden className="text-lg">
+            ›
+          </span>
+        </Link>
+      )}
 
       {matchCount > 0 && (
         <p className="mt-5 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white">
@@ -97,6 +115,16 @@ export default async function PerfilPage() {
           </span>
         </Link>
       </div>
+
+      <Link
+        href="/planos"
+        className="mt-2 flex items-center justify-between rounded-2xl bg-card px-4 py-3 text-sm font-semibold transition hover:bg-card-2"
+      >
+        <span>💎 Planos e pacotes</span>
+        <span aria-hidden className="text-mute">
+          ›
+        </span>
+      </Link>
 
       <section className="mt-6">
         <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
