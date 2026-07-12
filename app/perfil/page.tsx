@@ -77,7 +77,7 @@ export default async function PerfilPage() {
           className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3.5 text-emerald-950 transition hover:from-emerald-400 hover:to-emerald-500"
         >
           <span className="text-sm font-bold">
-            🚀 Venda mais rápido — assine PRO ou destaque seu anúncio
+            🚀 Venda mais rápido — assine o Essencial ou anuncie mais carros
           </span>
           <span aria-hidden className="text-lg">
             ›

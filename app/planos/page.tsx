@@ -5,7 +5,7 @@ import PlanCTA from "@/components/PlanCTA";
 export const metadata = {
   title: "Planos e pacotes — Catire",
   description:
-    "Assine PRO, Premium ou o Plano Lojista e destaque seus anúncios para vender mais rápido.",
+    "Assine Essencial, Premium ou o Plano Lojista e anuncie mais carros. Contato, Match e Catira liberados em todos os planos.",
 };
 
 function Check({ children }: { children: React.ReactNode }) {
@@ -85,8 +85,13 @@ export default function PlanosPage() {
           Venda mais rápido no Catire
         </h1>
         <p className="mt-1 text-sm text-mute">
-          Mais anúncios, mais contatos e destaque no topo do feed. Escolha o
-          plano ou o pacote que faz seu carro aparecer para quem quer comprar.
+          Escolha o plano pela quantidade de carros que quer anunciar. Quanto
+          mais anúncios, mais chances de vender e trocar.
+        </p>
+        <p className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+          <span aria-hidden>✓</span>
+          Contato Inteligente, Match e Catira são liberados em todos os planos —
+          sem cobrança por contato.
         </p>
       </header>
 
@@ -101,34 +106,34 @@ export default function PlanosPage() {
           price="Grátis"
           tagline="Para começar a anunciar"
           features={[
-            "1 anúncio ativo",
-            "1 contato de matching por dia",
+            "1 carro anunciado",
+            "Contato, Match e Catira liberados",
             "Aparece no feed de oportunidades",
           ]}
         />
 
         <PlanCard
-          name="PRO"
-          price="R$ 39"
+          name="Essencial"
+          price="R$ 100"
           tagline="Para quem vende com frequência"
           featured
           features={[
-            "Até 10 anúncios ativos",
-            "4 contatos de matching por dia",
-            "Destaque no topo por 5 dias",
-            "Selo PRO no anúncio",
+            "Até 3 carros anunciados",
+            "Contato, Match e Catira liberados",
+            "Destaque no topo do feed",
+            "Selo Essencial no anúncio",
           ]}
-          cta={{ planCode: "pro", label: "Assinar PRO" }}
+          cta={{ planCode: "essencial", label: "Assinar Essencial" }}
         />
 
         <PlanCard
           name="Premium"
-          price="R$ 99"
+          price="R$ 197"
           tagline="Máxima visibilidade"
           features={[
-            "Anúncios ilimitados",
-            "Contatos de matching ilimitados",
-            "Destaque no topo por 15 dias",
+            "Até 8 carros anunciados",
+            "Contato, Match e Catira liberados",
+            "Destaque contínuo no topo",
             "Prioridade máxima na exibição",
           ]}
           cta={{
@@ -155,13 +160,13 @@ export default function PlanosPage() {
             Ferramentas de loja para girar o estoque
           </p>
           <p className="mt-3">
-            <span className="text-3xl font-extrabold">R$ 249</span>
+            <span className="text-3xl font-extrabold">R$ 297</span>
             <span className="text-sm text-mute">/mês</span>
           </p>
           <ul className="mt-4 space-y-1.5">
-            <Check>Estoque alto de anúncios ativos</Check>
+            <Check>Até 14 carros anunciados</Check>
+            <Check>Contato, Match e Catira liberados</Check>
             <Check>Destaque contínuo e prioridade no feed</Check>
-            <Check>Contatos de matching sem limite</Check>
             <Check>Selo de loja verificada</Check>
             <Check>Suporte comercial dedicado</Check>
           </ul>
@@ -171,32 +176,32 @@ export default function PlanosPage() {
         </div>
       </section>
 
-      {/* Pacote de destaque */}
+      {/* Anúncio avulso (sem assinatura) */}
       <section className="mt-8">
         <h2 className="text-sm font-bold uppercase tracking-wide text-mute">
-          Turbine um anúncio
+          Sem assinar plano
         </h2>
         <div className="mt-3 rounded-2xl border border-amber-400/50 bg-amber-400/5 p-5">
           <div className="flex items-center gap-2">
-            <span className="text-xl">⚡</span>
-            <h3 className="text-lg font-extrabold">Destaque avulso</h3>
+            <span className="text-xl">🚗</span>
+            <h3 className="text-lg font-extrabold">Anúncio avulso</h3>
           </div>
           <p className="mt-0.5 text-xs text-mute">
-            Sem assinar plano — pague só quando quiser aparecer
+            Publique um carro sem plano mensal — pague só quando anunciar
           </p>
           <p className="mt-3">
-            <span className="text-3xl font-extrabold">R$ 25</span>
+            <span className="text-3xl font-extrabold">R$ 59</span>
             <span className="text-sm text-mute"> por anúncio</span>
           </p>
           <ul className="mt-4 space-y-1.5">
-            <Check>Topo do feed por 5 a 15 dias</Check>
-            <Check>Selo de destaque no anúncio</Check>
-            <Check>Muito mais visualizações e contatos</Check>
+            <Check>Publique 1 carro sem assinatura</Check>
+            <Check>Contato, Match e Catira liberados</Check>
+            <Check>Aparece no feed de oportunidades</Check>
           </ul>
           <div className="mt-5">
             <PlanCTA
-              planCode="destaque"
-              label="Destacar um anúncio"
+              planCode="avulso"
+              label="Publicar um anúncio"
               variant="secondary"
             />
           </div>

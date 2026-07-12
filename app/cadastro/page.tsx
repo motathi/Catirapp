@@ -19,7 +19,7 @@ export default async function CadastroPage({
       <Logo className="mb-6 h-[77px] w-auto" />
       <h1 className="text-2xl font-extrabold tracking-tight">Criar conta</h1>
       <p className="mt-1 text-sm text-mute">
-        Comece grátis: 1 anúncio ativo e 1 contato de matching por dia.
+        Comece grátis: 1 carro anunciado, com Contato, Match e Catira liberados.
       </p>
 
       {erro && (
