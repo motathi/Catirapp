@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import ThemeToggle from "@/components/ThemeToggle";
+import HomeAuthButton from "@/components/HomeAuthButton";
 import Logo from "@/components/Logo";
 import { fetchActiveAds, fetchFeedListings, type Ad } from "@/lib/supabase";
 import {
@@ -143,12 +144,7 @@ export default async function HomePage() {
           </h1>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link
-              href="/perfil"
-              className="rounded-full border border-line bg-card px-4 py-1.5 text-sm font-semibold transition hover:bg-card-2"
-            >
-              Entrar
-            </Link>
+            <HomeAuthButton />
           </div>
         </div>
 
