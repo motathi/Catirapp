@@ -53,9 +53,13 @@ docker run -p 8080:8080 -e FACE_VERIFY_TOKEN=um-segredo-forte catire-face-verify
 gcloud run deploy catire-face-verify \
   --source services/face-verify \
   --region southamerica-east1 \
-  --memory 2Gi --cpu 2 --no-allow-unauthenticated \
+  --memory 2Gi --cpu 2 --allow-unauthenticated \
   --set-env-vars FACE_VERIFY_TOKEN=um-segredo-forte
 ```
+
+> `--allow-unauthenticated` deixa o endpoint acessível pela internet, mas ele é
+> protegido pelo `FACE_VERIFY_TOKEN` (o app envia `Authorization: Bearer ...`).
+> Sem IAM do Google no meio, a chamada vinda da Vercel funciona.
 
 > Precisa de ~1.5–2 GB de RAM (TensorFlow). Render/Fly.io/Railway também servem;
 > basta apontar para este diretório/Dockerfile.
