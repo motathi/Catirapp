@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { ensureVerified } from "@/lib/identity";
 import { fetchFipe } from "@/lib/fipe";
 
 function fail(msg: string): never {
@@ -16,6 +17,7 @@ export async function createListing(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar");
+  await ensureVerified(supabase, user.id);
 
   const fipeType = String(formData.get("fipe_type") ?? "");
   const brandCode = String(formData.get("brand_code") ?? "");

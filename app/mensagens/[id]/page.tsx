@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { ensureVerified } from "@/lib/identity";
 import Conversation from "@/components/Conversation";
 import type { ChatMessage } from "@/app/mensagens/actions";
 
@@ -20,6 +21,7 @@ export default async function ConversationPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar");
+  await ensureVerified(supabase, user.id);
 
   // A RLS garante que só os participantes leem a conversa
   const { data: conv } = await supabase

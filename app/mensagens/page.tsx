@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { ensureVerified } from "@/lib/identity";
 import BottomNav from "@/components/BottomNav";
 
 export const revalidate = 0;
@@ -35,6 +36,7 @@ export default async function MensagensPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar");
+  await ensureVerified(supabase, user.id);
 
   const { data } = await supabase.rpc("my_conversations");
   const conversations = (data ?? []) as ConversationRow[];

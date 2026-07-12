@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { ensureVerified } from "@/lib/identity";
 import AnunciarForm from "@/components/AnunciarForm";
 import BottomNav from "@/components/BottomNav";
 
@@ -17,6 +18,7 @@ export default async function AnunciarPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar?aviso=" + encodeURIComponent("Entre para anunciar"));
+  await ensureVerified(supabase, user.id);
 
   return (
     <main className="mx-auto min-h-dvh max-w-md px-5 pb-24 pt-8">

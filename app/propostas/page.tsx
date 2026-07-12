@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { ensureVerified } from "@/lib/identity";
 import BottomNav from "@/components/BottomNav";
 import ProposalActions from "@/components/ProposalActions";
 import { formatBRL } from "@/lib/listings";
@@ -112,6 +113,7 @@ export default async function PropostasPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar");
+  await ensureVerified(supabase, user.id);
 
   const { data } = await supabase.rpc("my_trade_proposals");
   const rows = (data ?? []) as ProposalRow[];

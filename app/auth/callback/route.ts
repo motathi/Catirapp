@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { verificationEnabled } from "@/lib/identity";
 
 // Troca o code do OAuth (Google) por uma sessão e grava os cookies.
 export async function GET(request: Request) {
@@ -17,7 +18,24 @@ export async function GET(request: Request) {
     if (supabase) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) {
-        return NextResponse.redirect(`${base}${next.startsWith("/") ? next : "/perfil"}`);
+        // Gate de verificação de identidade também no login social.
+        if (verificationEnabled()) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("identity_verified")
+              .eq("id", user.id)
+              .single();
+            if (!profile?.identity_verified) {
+              return NextResponse.redirect(`${base}/verificar-identidade`);
+            }
+          }
+        }
+        const dest = next.startsWith("/") ? next : "/perfil";
+        return NextResponse.redirect(`${base}${dest}`);
       }
     }
   }

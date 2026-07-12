@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { verificationEnabled } from "@/lib/identity";
 
 export async function signIn(formData: FormData) {
   const supabase = await createSupabaseServer();
@@ -20,6 +21,21 @@ export async function signIn(formData: FormData) {
           ? "Confirme seu e-mail antes de entrar"
           : error.message;
     redirect(`/entrar?erro=${encodeURIComponent(msg)}`);
+  }
+
+  // Conta precisa passar pela verificação de identidade antes de usar o app.
+  if (verificationEnabled()) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("identity_verified")
+        .eq("id", user.id)
+        .single();
+      if (!profile?.identity_verified) redirect("/verificar-identidade");
+    }
   }
   redirect("/perfil");
 }
@@ -50,7 +66,8 @@ export async function signUp(formData: FormData) {
         encodeURIComponent("Conta criada! Confirme seu e-mail para entrar."),
     );
   }
-  redirect("/perfil");
+  // Conta nova passa pela verificação de identidade (quando o serviço está ativo).
+  redirect(verificationEnabled() ? "/verificar-identidade" : "/perfil");
 }
 
 export async function signOut() {

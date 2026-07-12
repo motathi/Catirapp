@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { ensureVerified } from "@/lib/identity";
 import { signOut } from "@/app/auth/actions";
 import BottomNav from "@/components/BottomNav";
 import { categoryLabel, formatBRL, type AssetCategory } from "@/lib/listings";
@@ -13,6 +14,7 @@ export default async function PerfilPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar");
+  await ensureVerified(supabase, user.id);
 
   const [{ data: profile }, { data: assets }, { data: myListings }] =
     await Promise.all([
