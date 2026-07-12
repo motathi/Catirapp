@@ -16,8 +16,10 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 
 API_TOKEN = os.environ.get("FACE_VERIFY_TOKEN", "")
-MODEL_NAME = os.environ.get("FACE_MODEL", "VGG-Face")
-DETECTOR = os.environ.get("FACE_DETECTOR", "opencv")
+# Padrão calibrado para KYC (documento x selfie): Facenet512 é mais preciso que
+# o VGG-Face e o RetinaFace detecta rostos melhor em fotos de documento.
+MODEL_NAME = os.environ.get("FACE_MODEL", "Facenet512")
+DETECTOR = os.environ.get("FACE_DETECTOR", "retinaface")
 MAX_BYTES = int(os.environ.get("FACE_MAX_BYTES", str(8 * 1024 * 1024)))
 
 app = FastAPI(title="Catire Face Verify")

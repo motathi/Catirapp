@@ -19,9 +19,13 @@ Nenhuma imagem é armazenada — tudo é processado em memória e descartado.
 | var | default | descrição |
 |-----|---------|-----------|
 | `FACE_VERIFY_TOKEN` | — | **obrigatório**. Segredo compartilhado com o backend do app. |
-| `FACE_MODEL` | `VGG-Face` | modelo do DeepFace (ex.: `Facenet512`, `ArcFace`). |
-| `FACE_DETECTOR` | `opencv` | detector de rosto (ex.: `retinaface`, `mtcnn` — mais precisos, mais pesados). |
+| `FACE_MODEL` | `Facenet512` | modelo do DeepFace (calibrado para KYC; alternativas: `ArcFace`, `VGG-Face`). |
+| `FACE_DETECTOR` | `retinaface` | detector de rosto (robusto em foto de documento; alternativas: `mtcnn`, `opencv`). |
 | `PORT` | `8080` | porta HTTP (injetada por Cloud Run/Render). |
+
+> Os padrões `Facenet512` + `retinaface` já vêm com os pesos embutidos na imagem
+> Docker. Se trocar por outro modelo/detector, o download acontece no primeiro
+> request (ou ajuste o pré-load no `Dockerfile`).
 
 ## Rodar localmente
 

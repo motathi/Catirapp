@@ -16,8 +16,10 @@ RUN pip install -r requirements.txt
 
 COPY main.py .
 
-# Pré-baixa os pesos do modelo para dentro da imagem (evita download no 1º request).
-RUN python -c "from deepface import DeepFace; DeepFace.build_model('VGG-Face')"
+# Pré-baixa os pesos (modelo de reconhecimento + detector) para dentro da imagem,
+# evitando download e latência no primeiro request.
+RUN python -c "from deepface import DeepFace; DeepFace.build_model('Facenet512')" \
+ && python -c "from retinaface import RetinaFace; RetinaFace.build_model()"
 
 # Cloud Run/Render injetam a porta em $PORT; default 8080.
 ENV PORT=8080
