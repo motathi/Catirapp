@@ -13,7 +13,7 @@ export default async function EntrarPage({
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 pb-20">
-      <Logo className="mb-6 h-[77px] w-auto" />
+      <Logo className="mb-6 h-[77px] w-auto self-start shrink-0" />
       <h1 className="text-2xl font-extrabold tracking-tight">Entrar</h1>
       <p className="mt-1 text-sm text-mute">
         O marketplace que encontra negócios para você.
