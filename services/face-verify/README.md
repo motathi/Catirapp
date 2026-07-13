@@ -21,6 +21,7 @@ Nenhuma imagem é armazenada — tudo é processado em memória e descartado.
 | `FACE_VERIFY_TOKEN` | — | **obrigatório**. Segredo compartilhado com o backend do app. |
 | `FACE_MODEL` | `Facenet512` | modelo do DeepFace (calibrado para KYC; alternativas: `ArcFace`, `VGG-Face`). |
 | `FACE_DETECTOR` | `retinaface` | detector de rosto (robusto em foto de documento; alternativas: `mtcnn`, `opencv`). |
+| `FACE_MATCH_THRESHOLD` | `0.40` | distância (cosseno) máxima para "mesma pessoa". Maior = mais tolerante. Calibrado para documento×selfie (padrão do Facenet512 seria 0.30, rígido demais). |
 | `PORT` | `8080` | porta HTTP (injetada por Cloud Run/Render). |
 
 > Os padrões `Facenet512` + `retinaface` já vêm com os pesos embutidos na imagem

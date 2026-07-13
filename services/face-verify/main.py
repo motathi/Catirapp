@@ -20,6 +20,11 @@ API_TOKEN = os.environ.get("FACE_VERIFY_TOKEN", "")
 # o VGG-Face e o RetinaFace detecta rostos melhor em fotos de documento.
 MODEL_NAME = os.environ.get("FACE_MODEL", "Facenet512")
 DETECTOR = os.environ.get("FACE_DETECTOR", "retinaface")
+# Limiar de distância (cosseno) para considerar "mesma pessoa". Foto de documento
+# (impressa, atrás de plástico, mais antiga) rende distâncias maiores que fotos
+# limpas, então usamos um valor mais tolerante que o padrão do Facenet512 (0.30),
+# mantendo margem para rejeitar pessoas diferentes (~0.50+). Ajustável por env.
+MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.40"))
 MAX_BYTES = int(os.environ.get("FACE_MAX_BYTES", str(8 * 1024 * 1024)))
 
 app = FastAPI(title="Catire Face Verify")
@@ -45,7 +50,12 @@ def _authorized(authorization: str) -> bool:
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "model": MODEL_NAME, "detector": DETECTOR}
+    return {
+        "ok": True,
+        "model": MODEL_NAME,
+        "detector": DETECTOR,
+        "threshold": MATCH_THRESHOLD,
+    }
 
 
 @app.post("/verify")
@@ -78,11 +88,14 @@ async def verify(
             content={"error": "face_not_detected"},
         )
 
+    # Decidimos a verificação com o nosso limiar de KYC, não com o padrão (mais
+    # rígido) do modelo, que gera falso-negativo em foto de documento.
+    distance = float(result["distance"])
     return JSONResponse(
         content={
-            "verified": bool(result["verified"]),
-            "distance": float(result["distance"]),
-            "threshold": float(result["threshold"]),
+            "verified": distance <= MATCH_THRESHOLD,
+            "distance": distance,
+            "threshold": MATCH_THRESHOLD,
             "model": str(result.get("model", MODEL_NAME)),
         }
     )
